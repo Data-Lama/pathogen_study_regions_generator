@@ -28,8 +28,9 @@ class DataSource(ABC):
         Parameters
         ----------
         df_geo : Geopandas.DataFrame
-            DataFrame with the desired geographical resolution. This mehod assumes the ID for each polygon is set up as 
-            the index.
+            DataFrame with the desired geographical resolution. The df must include columns:
+                - geometry
+                - ID : column with the unique ID
         time_resolution : string
             Available time resolutions. Check the constants module for available options.
 

@@ -1,0 +1,3 @@
+pandas==1.4.1
+geopandas==0.10.2
+pygeos==0.12.0
