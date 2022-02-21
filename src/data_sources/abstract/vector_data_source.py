@@ -3,7 +3,7 @@ import abc
 from abc import ABC, abstractmethod
 
 
-class DataSource(ABC):
+class VectorDataSource(ABC):
 
     @abc.abstractproperty
     def ID(self):
@@ -36,7 +36,7 @@ class DataSource(ABC):
 
         Return
         ------
-        pandas.DataFrame
+        pandas.DataFrame (vector data)
             Returns a pandas Dataframe with the timeseries of the geographical regions. Must include the columns:
                 - ID : identifier of the corresponding polygon.
                 - date : date for the values (corresponds to the last day of the periodicity)

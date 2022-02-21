@@ -17,15 +17,18 @@ PIPELINE_DATA_FOLDER = CONFIG['pipeline_data_location']
 # Global constants
 ID = "ID"
 DATE = "date"
+VALUE = "value"
+GEOMETRY = "geometry"
 
 # Time resolutions
+DAY = "DAY"
 WEEK = "WEEK"
 MONTH = "MONTH"
 YEAR = "YEAR"
 
 
 def isTimeResolutionValid(tr):
-    if tr not in [WEEK, MONTH, YEAR]:
+    if tr not in [DAY, WEEK, MONTH, YEAR]:
         raise ValueError(f'Time resolution: {tr} not supported')
 
     return True
