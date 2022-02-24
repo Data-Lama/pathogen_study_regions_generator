@@ -2,14 +2,14 @@
 import geopandas
 import pandas as pd
 
-from constants import DATE, DENSITY, GEOMETRY, ID, MANIPULATION_PROJECTION, MAX, MIN, TOTAL
+from constants import DATE, AVERAGE, GEOMETRY, ID, MANIPULATION_PROJECTION, MAX, MIN, TOTAL
 
 
 def overlay_over_geo(
     df_values,
     df_geo,
     grouping_columns=[ID, DATE],
-    included_groupings=[TOTAL, DENSITY, MAX, MIN],
+    included_groupings=[TOTAL, AVERAGE, MAX, MIN],
 ):
     '''
     Method that overlays the given df over the geographic dataframe
@@ -49,8 +49,8 @@ def overlay_over_geo(
                 response[f"{col}_{TOTAL}"] = (
                     df[col] *
                     df.geometry.to_crs(MANIPULATION_PROJECTION).area).sum()
-            if DENSITY in included_groupings:
-                response[f"{col}_{DENSITY}"] = (df[col] * df.geometry.to_crs(
+            if AVERAGE in included_groupings:
+                response[f"{col}_{AVERAGE}"] = (df[col] * df.geometry.to_crs(
                     MANIPULATION_PROJECTION).area).sum() / area
 
             return (pd.DataFrame([response]))

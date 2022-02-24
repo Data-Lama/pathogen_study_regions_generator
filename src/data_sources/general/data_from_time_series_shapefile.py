@@ -1,6 +1,6 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
-from constants import DATA_SOURCE_IDENT, DATE, DENSITY, ID, MAX, MIN, TOTAL, isTimeResolutionValid
+from constants import DATA_SOURCE_IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
 import pandas as pd
 
 from data_sources.abstract.vector_data_source import VectorDataSource
@@ -22,7 +22,7 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
                  id,
                  name,
                  data_time_resolution,
-                 included_groupings=[TOTAL, DENSITY, MAX, MIN]):
+                 included_groupings=[TOTAL, AVERAGE, MAX, MIN]):
         '''
         Assings the included groupiings for the overlay stage
         '''
@@ -55,7 +55,8 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         '''
         pass
 
-    # Override
+    # Override Methods
+    # -----------------
     def createData(self, df_geo, time_resolution):
 
         # Checks time resolution

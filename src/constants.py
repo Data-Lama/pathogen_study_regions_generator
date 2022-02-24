@@ -34,11 +34,11 @@ def isTimeResolutionValid(tr):
     return True
 
 
-# Grouping constants
+# Geographic Grouping constants
 MAX = "max"
 MIN = "min"
 TOTAL = "total"
-DENSITY = "density"
+AVERAGE = "average"
 
 # Data Stages constants
 RAW = "raw"

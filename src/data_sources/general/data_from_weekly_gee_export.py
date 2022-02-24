@@ -16,8 +16,9 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
     Main class for extraction for yearly shapefiles
     '''
 
-    def __init__(self, id, name, folder_name, file_name, data_columns,
-                 min_year, max_year, included_groupings):
+    def __init__(self, id, name, folder_name, file_name,
+                 data_columns_dictionary, min_year, max_year,
+                 included_groupings):
         '''
         '''
         super().__init__(id=id,
@@ -26,10 +27,20 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
                          included_groupings=included_groupings)
 
         self.folder_name = folder_name
-        self.data_columns = data_columns
+        self.data_columns = list(data_columns_dictionary.keys())
+        self.data_columns_dictionary = data_columns_dictionary
         self.file_name = file_name
         self.min_year = min_year
         self.max_year = max_year
+
+    # Generic Methods
+    # ----------------
+    def rename_colum(self, col):
+        '''Renames column.
+        
+        Default implementations returns the correponding value from dict
+        '''
+        return (self.data_columns_dictionary[col])
 
     # Override
     def loadTimeSeriesShapefile(self):
@@ -48,5 +59,9 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
         df[DATE] = pd.to_datetime(df.date, unit='ms')
 
         df = df[self.data_columns + ['geometry']].copy()
+
+        # Renames columns
+        df = df.rename(columns=dict([(col, self.rename_colum(col))
+                                     for col in self.data_columns]))
 
         return (df)
