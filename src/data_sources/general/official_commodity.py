@@ -2,7 +2,7 @@
 # Uses Yahoo finance API
 from constants import DATA_SOURCE_IDENT, DATE, ID, VALUE, isTimeResolutionValid
 
-from data_sources.abstract.vector_data_source import VectorDataSource
+from data_sources.abstract.matrix_data_source import VectorDataSource
 
 import yfinance as yf
 import pandas as pd

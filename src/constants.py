@@ -16,6 +16,8 @@ PIPELINE_DATA_FOLDER = CONFIG['pipeline_data_location']
 
 # Global constants
 ID = "ID"
+ID_1 = "ID_1"
+ID_2 = "ID_2"
 DATE = "date"
 VALUE = "value"
 GEOMETRY = "geometry"

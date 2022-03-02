@@ -93,7 +93,7 @@ def take_to_period_representative(date, time_resolution):
 
 def get_period_representative_function(time_resolution):
     '''
-    Method that returns the function that receives a dat and takes it to its representative, given the time resolution
+    Method that returns the function that receives a date and takes it to its representative, given the time resolution
     '''
 
     if time_resolution == WEEK:
