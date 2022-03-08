@@ -29,9 +29,10 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                  file_name,
                  suplementary_gdf,
                  data_time_resolution,
-                 included_groupings=[TOTAL, AVERAGE, MAX, MIN]):
+                 included_groupings=[TOTAL, AVERAGE, MAX, MIN],
+                 columns_to_exclude=[]):
         '''
-        Assings the included groupiings for the overlay stage
+        Assings the included groupings for the overlay stage
         '''
         super().__init__()
         self.__id = id
@@ -42,6 +43,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         self.included_groupings = included_groupings
         self.suplementary_geo = suplementary_gdf
         self.encoding_dict = {}
+        self.columns_to_exclude = columns_to_exclude
 
     @property
     def ID(self):
@@ -54,6 +56,9 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     def set_encoding_dict(self, encoding_dict):
         self.encoding_dict = encoding_dict
     
+
+    # Override Methods
+    # -----------------
 
     def loadTimeSeriesCSV(self, index_name):
         '''
@@ -97,7 +102,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         df = pd.read_csv(file_location)
 
         # Perform one-hot-encoding
-        df, encoding_dict = one_hot_encoding(df, columns_to_exclude=[index_name])
+        df, encoding_dict = one_hot_encoding(df, columns_to_exclude=self.columns_to_exclude + [index_name])
         self.set_encoding_dict(encoding_dict)
 
         # merge df with geometry
@@ -105,8 +110,6 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
 
         return gdf
 
-    # Override Methods
-    # -----------------
     def createData(self, df_geo, time_resolution):
 
         # Checks time resolution
