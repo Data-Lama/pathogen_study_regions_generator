@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from constants import DATA_SOURCE_IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
 import pandas as pd
 
-from data_sources.abstract.matrix_data_source import VectorDataSource
+# REVISAR: No se importa data_sources.abstract.vector_data_source en lugar de matrix??
+from data_sources.abstract.matrix_data_source import VectorDataSource       
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
 from utils.geographic_functions import overlay_over_geo
 
