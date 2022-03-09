@@ -1,14 +1,13 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
-from constants import DATA_SOURCE_IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
+from constants import IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
 import pandas as pd
 
-# REVISAR: No se importa data_sources.abstract.vector_data_source en lugar de matrix??
-from data_sources.abstract.matrix_data_source import VectorDataSource       
+from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
 from utils.geographic_functions import overlay_over_geo
 
-IDENT = DATA_SOURCE_IDENT
+IDENT = IDENT
 
 
 class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
@@ -28,18 +27,10 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         Assings the included groupiings for the overlay stage
         '''
         super().__init__()
-        self.__id = id
-        self.__name = name
+        self.ID = id
+        self.name = name
         self.data_time_resolution = data_time_resolution
         self.included_groupings = included_groupings
-
-    @property
-    def ID(self):
-        return self.__id
-
-    @property
-    def name(self):
-        return self.__name
 
     @abstractmethod
     def loadTimeSeriesShapefile(self):

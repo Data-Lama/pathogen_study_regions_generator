@@ -1,17 +1,17 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
-from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, DATA_SOURCE_IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
+from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
 
 import os
 import pandas as pd
 import geopandas as gpd
 
-from data_sources.abstract.vector_data_source import VectorDataSource       
+from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
 from utils.geographic_functions import overlay_over_geo
+from utils.logger import Logger
 from utils.preprocessing_functions import one_hot_encoding
 
-IDENT = DATA_SOURCE_IDENT
 
 class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     '''
@@ -25,7 +25,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     def __init__(self,
                  id,
                  name,
-                 folder_name, 
+                 folder_name,
                  file_name,
                  suplementary_gdf,
                  data_time_resolution,
@@ -52,10 +52,9 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     @property
     def name(self):
         return self.__name
-    
+
     def set_encoding_dict(self, encoding_dict):
         self.encoding_dict = encoding_dict
-    
 
     # Override Methods
     # -----------------
@@ -81,28 +80,34 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         # Loads supplementary file
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW)
 
-        supplementary_file_location = os.path.join(folder_location, SUPPLEMENTARY, self.suplementary_gdf)
+        supplementary_file_location = os.path.join(folder_location,
+                                                   SUPPLEMENTARY,
+                                                   self.suplementary_gdf)
         try:
             supl_gdf = gpd.read_file(supplementary_file_location)
         except FileNotFoundError as e:
-            print("Supplementary geographic file for loading csv not found.")
+            Logger.print_error(
+                "Supplementary geographic file for loading csv not found.")
             raise e
 
         if len(supl_gdf.columns) > 2:
-            raise("Supplementary geographic file must have only two columns. A 'geometry' column and any other desired\
+            raise (
+                "Supplementary geographic file must have only two columns. A 'geometry' column and any other desired\
                 identifier column.")
 
-        # Extract identifier column name from geoPandas     
+        # Extract identifier column name from geoPandas
         supl_index = list(supl_gdf.columns).remove('geometry')[0]
 
         # Loads csv
-        folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW, self.folder_name)
+        folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW,
+                                       self.folder_name)
         file_location = os.path.join(folder_location, self.file_name)
 
         df = pd.read_csv(file_location)
 
         # Perform one-hot-encoding
-        df, encoding_dict = one_hot_encoding(df, columns_to_exclude=self.columns_to_exclude + [index_name])
+        df, encoding_dict = one_hot_encoding(
+            df, columns_to_exclude=self.columns_to_exclude + [index_name])
         self.set_encoding_dict(encoding_dict)
 
         # merge df with geometry
@@ -115,11 +120,11 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 
-        # Reads the time series 
-        print(f"{IDENT}Loads Data")
+        # Reads the time series
+        Logger.print_progress(f"Loads Data")
         gdf_values = self.loadTimeSeriesShapefile()
 
-        print(f"{IDENT}Builds Overlay")
+        Logger.print_progress(f"Builds Overlay")
         # Overlays over the given geography
         df = overlay_over_geo(
             gdf_values,
@@ -128,7 +133,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
             included_groupings=self.included_groupings,
         )
 
-        print(f"{IDENT}Changes Time Resolution")
+        Logger.print_progress(f"Changes Time Resolution")
         # Takes the time series to the desired time resolution
         # --------------
         # Compares time resolutions
@@ -164,4 +169,3 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         # Orders columns
         return (df[[ID, DATE] +
                    df.columns.difference([ID, DATE]).values.tolist()].copy())
-

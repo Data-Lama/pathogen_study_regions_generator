@@ -1,14 +1,12 @@
 # Data source from yearly shapefiles
 import os
 
-from constants import DATA_SOURCE_IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, WEEK
+from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, WEEK
 
 import geopandas
 import pandas as pd
 
 from data_sources.general.data_from_time_series_shapefile import DataFromTimeSeriesOfShapefiles
-
-IDENT = DATA_SOURCE_IDENT
 
 
 class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):

@@ -1,6 +1,6 @@
 # Data source from an official commodity.
 # Uses Yahoo finance API
-from constants import DATA_SOURCE_IDENT, DATE, ID, VALUE, isTimeResolutionValid
+from constants import IDENT, DATE, ID, VALUE, isTimeResolutionValid
 
 from data_sources.abstract.matrix_data_source import VectorDataSource
 
@@ -9,7 +9,7 @@ import pandas as pd
 
 from utils.date_functions import get_period_representative_function
 
-IDENT = DATA_SOURCE_IDENT
+IDENT = IDENT
 
 # Constants
 target_col = "Adj Close"
@@ -27,19 +27,11 @@ class OfficialCommodity(VectorDataSource):
         '''
         '''
         super().__init__()
-        self.__ID = ID
-        self.__name = name
+        self.ID = ID
+        self.name = name
         self.symbol = symbol
         self.min_year = min_year
         self.max_year = max_year
-
-    @property
-    def ID(self):
-        return self.__ID
-
-    @property
-    def name(self):
-        return self.__name
 
     # Override
     def createData(self, df_geo, time_resolution):

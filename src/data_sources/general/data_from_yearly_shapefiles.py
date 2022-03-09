@@ -1,14 +1,15 @@
 # Data source from yearly shapefiles
 import os
 
-from constants import DATA_SOURCE_IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, YEAR
+from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, YEAR
 
 import geopandas
 import pandas as pd
 
 from data_sources.general.data_from_time_series_shapefile import DataFromTimeSeriesOfShapefiles
+from utils.logger import Logger
 
-IDENT = DATA_SOURCE_IDENT
+IDENT = IDENT
 
 
 class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
@@ -46,7 +47,7 @@ class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
                                          self.file_format.format(year=year))
 
             if not os.path.isfile(file_location):
-                print(f"{IDENT}      No file found for year {year}")
+                Logger.print_progress(f"No file found for year {year}")
                 continue
 
             # Reads file

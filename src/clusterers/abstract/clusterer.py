@@ -1,11 +1,26 @@
 # Abstract class for implementing an embedder
 from abc import ABC, abstractmethod
+import abc
 
 
-class Clusterer(ABC):
+class AbstractClusterer(ABC):
+
+    @abc.abstractproperty
+    def ID(self):
+        '''
+        Unique identifier for the clusterer
+        '''
+        pass
+
+    @abc.abstractproperty
+    def name(self):
+        '''
+        Human readable name for the clusterer
+        '''
+        pass
 
     @abstractmethod
-    def cluster(self, df_vector=None, df_matrix=None):
+    def clusterData(self, df_vector=None, df_matrix=None):
         '''
         Method that clusters the embedded metric space parameters.
 

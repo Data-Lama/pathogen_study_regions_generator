@@ -21,6 +21,7 @@ ID_2 = "ID_2"
 DATE = "date"
 VALUE = "value"
 GEOMETRY = "geometry"
+CLUSTER_ID = "cluster_id"
 
 # Time resolutions
 DAY = "DAY"
@@ -51,4 +52,4 @@ USUAL_PROJECTION = "EPSG:4326"
 MANIPULATION_PROJECTION = 'EPSG:3857'
 
 # Identation Variables
-DATA_SOURCE_IDENT = "      "
+IDENT = "      "
