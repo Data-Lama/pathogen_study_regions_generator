@@ -1,16 +1,16 @@
 # Geographic functions
+from traceback import print_tb
 import geopandas
 import pandas as pd
 
 from constants import DATE, AVERAGE, GEOMETRY, ID, MANIPULATION_PROJECTION, MAX, MIN, TOTAL
 
 
-def overlay_over_geo(
-    df_values,
-    df_geo,
-    grouping_columns=[ID, DATE],
-    included_groupings=[TOTAL, AVERAGE, MAX, MIN],
-):
+def overlay_over_geo(df_values,
+                     df_geo,
+                     grouping_columns=[ID, DATE],
+                     included_groupings=[TOTAL, AVERAGE, MAX, MIN],
+                     default_values=None):
     '''
     Method that overlays the given df over the geographic dataframe
 
@@ -25,6 +25,8 @@ def overlay_over_geo(
         Columns that must be grouped over
     included_groupings : array
         Grouping functions to be applied 
+    default_values : value or dict
+        Value or dict indicating the default values for geometries where no value could be extracted
     '''
 
     df_geo = df_geo[[ID, GEOMETRY]]
@@ -60,5 +62,22 @@ def overlay_over_geo(
     df_overlayed = df_overlayed.groupby(grouping_columns).apply(
         extract_values).reset_index().drop(f'level_{len(grouping_columns)}',
                                            axis=1)
+
+    # Fills Nas
+    if DATE in grouping_columns:
+        # Adds default by date
+        # Builds total DF
+        geo_ids = df_geo[ID].unique()
+        dfs = []
+        for date in df_values[DATE].unique():
+            dfs.append(pd.DataFrame({ID: geo_ids, DATE: date}))
+
+        df_global = pd.concat(dfs, ignore_index=True)
+        df_overlayed = df_global.merge(df_overlayed,
+                                       how='left').fillna(default_values)
+
+    else:
+        df_overlayed = df_geo[[ID]].merge(df_overlayed,
+                                          how='left').fillna(default_values)
 
     return (df_overlayed)

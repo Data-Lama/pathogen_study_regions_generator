@@ -14,7 +14,7 @@ class GoldStockPrice(OfficialCommodity):
     '''
 
     def __init__(self):
-        super().__init__(id=id,
+        super().__init__(ID=id,
                          name=name,
                          symbol=symbol,
                          min_year=2008,

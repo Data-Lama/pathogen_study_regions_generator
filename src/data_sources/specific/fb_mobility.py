@@ -3,7 +3,7 @@
 # Constants
 
 from re import A
-from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1
+from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, USUAL_PROJECTION
 from data_sources.abstract.matrix_data_source import MatrixDataSource
 from utils.date_functions import get_period_representative_function
 from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES, build_movement
@@ -12,8 +12,8 @@ import geopandas
 import pandas as pd
 
 # Constants
-__SOURCE_ID = "fb_mobility"
-__NAME = "Facebook Mobility"
+SOURCE_ID = "fb_mobility"
+NAME = "Facebook Mobility"
 MOVEMENT = "movement"
 
 
@@ -27,11 +27,11 @@ class FBMobility(MatrixDataSource):
 
     @property
     def ID(self):
-        return __SOURCE_ID
+        return SOURCE_ID
 
     @property
     def name(self):
-        return __NAME
+        return NAME
 
     # Override
     def createData(self, df_geo, time_resolution):
@@ -53,20 +53,23 @@ class FBMobility(MatrixDataSource):
         df_movement = geopandas.sjoin(geopandas.GeoDataFrame(
             df_movement,
             geometry=geopandas.points_from_xy(df_movement.start_movement_lon,
-                                              df_movement.start_movement_lat)),
+                                              df_movement.start_movement_lat),
+            crs=USUAL_PROJECTION),
                                       df_geo[[ID, GEOMETRY]],
                                       how='inner',
-                                      op='within').rename(columns={
+                                      predicate='within').rename(columns={
                                           ID: ID_1
                                       }).drop(['index_right'], axis=1)
         # Then End
-        df_movement = geopandas.sjoin(geopandas.GeoDataFrame(
-            df_movement,
-            geometry=geopandas.points_from_xy(df_movement.end_movement_lon,
-                                              df_movement.end_movement_lat)),
-                                      df_geo[[ID, GEOMETRY]],
-                                      how='inner',
-                                      op='within').rename(columns={ID: ID_2})
+        df_movement = geopandas.sjoin(
+            geopandas.GeoDataFrame(df_movement,
+                                   geometry=geopandas.points_from_xy(
+                                       df_movement.end_movement_lon,
+                                       df_movement.end_movement_lat),
+                                   crs=USUAL_PROJECTION),
+            df_geo[[ID, GEOMETRY]],
+            how='inner',
+            predicate='within').rename(columns={ID: ID_2})
 
         # Filters and renames
         df_movement = df_movement[['date_time', ID_1, ID_2,
@@ -82,7 +85,7 @@ class FBMobility(MatrixDataSource):
 
         # Rounds and Groups by
         df_movement[DATE] = pd.to_datetime(df_movement[DATE])
-        df_movement[DATE] = df_movement.date_time.dt.round(freq='D')
+        df_movement[DATE] = df_movement[DATE].dt.round(freq='D')
         # Takes to end of period
         df_movement[DATE] = df_movement[DATE].apply(
             get_period_representative_function(time_resolution))

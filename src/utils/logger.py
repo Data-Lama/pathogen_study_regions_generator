@@ -10,7 +10,7 @@ class __Logger():
     current_ident = ""
 
     def enter_level(self):
-        self.current_ident = "   " + self.add_ident
+        self.current_ident = IDENT + self.current_ident
 
     def exit_level(self):
 

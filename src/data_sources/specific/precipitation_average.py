@@ -22,7 +22,8 @@ class PrecipitationTotal(DataFromWeeklyGeeExport):
                          data_columns_dictionary=data_columns_dictionary,
                          min_year=2000,
                          max_year=2020,
-                         included_groupings=[AVERAGE])
+                         included_groupings=[AVERAGE],
+                         default_values=None)
 
     # Override
     # Computes Average

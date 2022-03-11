@@ -14,13 +14,12 @@ class Malaria(DataFromTimeSeriesOfCSV):
     '''
 
     def __init__(self):
-        super().__init__(id=id,
-                         name=name,
-                         folder_name="malaria_cases",
-                         file_name="anonymized_individual_data.csv",
-                         min_year=2006,
-                         max_year=2019,
-                         included_groupings=[TOTAL],
-                         columns_to_exclude=["notification_muni_id", "residence_muni_id"])
-
-                         
+        super().__init__(
+            id=id,
+            name=name,
+            folder_name="malaria_cases",
+            file_name="anonymized_individual_data.csv",
+            min_year=2006,
+            max_year=2019,
+            included_groupings=[TOTAL],
+            columns_to_exclude=["notification_muni_id", "residence_muni_id"])

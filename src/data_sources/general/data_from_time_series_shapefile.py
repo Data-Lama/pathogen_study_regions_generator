@@ -1,13 +1,12 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
+from utils.logger import Logger
 from constants import IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
 import pandas as pd
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
 from utils.geographic_functions import overlay_over_geo
-
-IDENT = IDENT
 
 
 class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
@@ -22,15 +21,36 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
                  id,
                  name,
                  data_time_resolution,
-                 included_groupings=[TOTAL, AVERAGE, MAX, MIN]):
+                 included_groupings=[TOTAL, AVERAGE, MAX, MIN],
+                 default_values=None):
         '''
-        Assings the included groupiings for the overlay stage
+        Parameters
+        ----------
+        id : string
+            ID of the data source
+        name : string
+            Name of the data source
+        data_time_resolution : string
+            Resolution in which the data source is in.
+        included_groupings : array
+            Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
+        default_values : value or dict
+            Value or dict indicating the default values for geometries where no value could be extracted. See: utils.geographic_functions.overlay_over_geo for more info
         '''
         super().__init__()
-        self.ID = id
-        self.name = name
+        self.__id = id
+        self.__name = name
         self.data_time_resolution = data_time_resolution
         self.included_groupings = included_groupings
+        self.default_values = default_values
+
+    @property
+    def ID(self):
+        return self.__id
+
+    @property
+    def name(self):
+        return self.__name
 
     @abstractmethod
     def loadTimeSeriesShapefile(self):
@@ -55,19 +75,20 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         isTimeResolutionValid(time_resolution)
 
         # Reads the time series shapefile
-        print(f"{IDENT}Loads Data")
+        Logger.print_progress(f"Loads Data")
+        Logger.enter_level()
         df_values = self.loadTimeSeriesShapefile()
+        Logger.exit_level()
 
-        print(f"{IDENT}Builds Overlay")
+        Logger.print_progress(f"Builds Overlay")
         # Overlays over the given geography
-        df = overlay_over_geo(
-            df_values,
-            df_geo,
-            grouping_columns=[ID, DATE],
-            included_groupings=self.included_groupings,
-        )
+        df = overlay_over_geo(df_values,
+                              df_geo,
+                              grouping_columns=[ID, DATE],
+                              included_groupings=self.included_groupings,
+                              default_values=self.default_values)
 
-        print(f"{IDENT}Changes Time Resolution")
+        Logger.print_progress(f"Changes Time Resolution")
         # Takes the time series to the desired time resolution
         # --------------
         # Compares time resolutions

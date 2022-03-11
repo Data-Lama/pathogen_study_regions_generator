@@ -20,5 +20,6 @@ class Coca(DataFromYearlyShapefiles):
                          file_format="coca_fields_{year}.shp",
                          data_columns=['coca'],
                          min_year=2000,
-                         max_year=2002,
-                         included_groupings=[TOTAL])
+                         max_year=2019,
+                         included_groupings=[TOTAL],
+                         default_values=0)

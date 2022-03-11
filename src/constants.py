@@ -13,6 +13,7 @@ with open(
 
 # Global constants from config
 PIPELINE_DATA_FOLDER = CONFIG['pipeline_data_location']
+GEO_DATA_FOLDER = CONFIG['geo']
 
 # Global constants
 ID = "ID"
@@ -52,4 +53,4 @@ USUAL_PROJECTION = "EPSG:4326"
 MANIPULATION_PROJECTION = 'EPSG:3857'
 
 # Identation Variables
-IDENT = "      "
+IDENT = "   "

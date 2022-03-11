@@ -9,8 +9,6 @@ import pandas as pd
 from data_sources.general.data_from_time_series_shapefile import DataFromTimeSeriesOfShapefiles
 from utils.logger import Logger
 
-IDENT = IDENT
-
 
 class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
     '''
@@ -18,13 +16,36 @@ class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
     '''
 
     def __init__(self, id, name, folder_name, file_format, data_columns,
-                 min_year, max_year, included_groupings):
+                 min_year, max_year, included_groupings, default_values):
         '''
+        Parameters
+        ----------
+        id : string
+            ID of the data source
+        name : string
+            Name of the data source
+        folder_name : string
+            Folder name inside the raw PIPELINE_DATA_FOLDER to search for. 
+        file_format : string
+            File format of teh files. Must include the variable "year" to be formated with the corresponding year.
+        data_columns:
+            Data columns to  extract from the source
+        min_year : int
+            Start year of the data source
+        max_year : int
+            End year of teh data source
+        data_time_resolution : string
+            Resolution in which the data source is in.
+        included_groupings : array
+            Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
+        default_values : value or dict
+            Value or dict indicating the default values for geometries where no value could be extracted. See: utils.geographic_functions.overlay_over_geo for more info
         '''
         super().__init__(id=id,
                          name=name,
                          data_time_resolution=YEAR,
-                         included_groupings=included_groupings)
+                         included_groupings=included_groupings,
+                         default_values=default_values)
 
         self.folder_name = folder_name
         self.data_columns = data_columns

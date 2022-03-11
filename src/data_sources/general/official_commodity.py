@@ -2,7 +2,7 @@
 # Uses Yahoo finance API
 from constants import IDENT, DATE, ID, VALUE, isTimeResolutionValid
 
-from data_sources.abstract.matrix_data_source import VectorDataSource
+from data_sources.abstract.vector_data_source import VectorDataSource
 
 import yfinance as yf
 import pandas as pd
@@ -27,11 +27,19 @@ class OfficialCommodity(VectorDataSource):
         '''
         '''
         super().__init__()
-        self.ID = ID
-        self.name = name
+        self.__id = ID
+        self.__name = name
         self.symbol = symbol
         self.min_year = min_year
         self.max_year = max_year
+
+    @property
+    def ID(self):
+        return self.__id
+
+    @property
+    def name(self):
+        return self.__name
 
     # Override
     def createData(self, df_geo, time_resolution):

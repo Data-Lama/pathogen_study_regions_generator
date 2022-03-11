@@ -22,4 +22,5 @@ class PrecipitationTotal(DataFromWeeklyGeeExport):
                          data_columns_dictionary=data_columns_dictionary,
                          min_year=2000,
                          max_year=2020,
-                         included_groupings=[TOTAL])
+                         included_groupings=[TOTAL],
+                         default_values=None)

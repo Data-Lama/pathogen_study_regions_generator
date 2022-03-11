@@ -22,4 +22,5 @@ class TemperatureMax(DataFromWeeklyGeeExport):
                          data_columns_dictionary=data_columns_dictionary,
                          min_year=2000,
                          max_year=2020,
-                         included_groupings=[MAX])
+                         included_groupings=[MAX],
+                         default_values=None)
