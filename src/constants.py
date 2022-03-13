@@ -54,3 +54,9 @@ MANIPULATION_PROJECTION = 'EPSG:3857'
 
 # Identation Variables
 IDENT = "   "
+
+
+# Testing constants
+SUPPLEMENTARY_ARGS = {
+    "Malaria": "municipalities/municipalities.shp"
+}

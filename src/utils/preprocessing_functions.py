@@ -42,7 +42,6 @@ def one_hot_encoding(df, columns_to_exclude=[]):
     for idx, var in enumerate(categorical_variables):
         if var and variables_names[idx] not in columns_to_exclude: variables_to_encode.append(variables_names[idx])
 
-
     for var in variables_to_encode:
         translation_dic = {}
 

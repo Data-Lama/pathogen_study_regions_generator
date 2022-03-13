@@ -1,16 +1,17 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
-from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
+from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
 
 import os
 import pandas as pd
 import geopandas as gpd
 
 from data_sources.abstract.vector_data_source import VectorDataSource
-from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
-from utils.geographic_functions import overlay_over_geo
+from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function, take_to_period_representative
+from utils.geographic_functions import overlay_over_geo_malaria_tmp
 from utils.logger import Logger
 from utils.preprocessing_functions import one_hot_encoding
+
 
 
 class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
@@ -27,8 +28,10 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                  name,
                  folder_name,
                  file_name,
-                 suplementary_gdf,
-                 data_time_resolution,
+                 min_year,
+                 max_year,
+                 index_id=ID,
+                 min_time_resolution=DAY,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
                  columns_to_exclude=[]):
         '''
@@ -39,9 +42,11 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         self.__name = name
         self.folder_name = folder_name
         self.file_name = file_name
-        self.data_time_resolution = data_time_resolution
+        self.min_year = min_year
+        self.max_year = max_year
+        self.index_id = index_id
         self.included_groupings = included_groupings
-        self.suplementary_geo = suplementary_gdf
+        self.min_time_resolution = min_time_resolution
         self.encoding_dict = {}
         self.columns_to_exclude = columns_to_exclude
 
@@ -59,7 +64,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     # Override Methods
     # -----------------
 
-    def loadTimeSeriesCSV(self, index_name):
+    def loadTimeSeriesCSV(self):
         '''
         Method that builds data source geography by merging with a supplementary geoPandas.
         This method assumes that the indicated file has only two columns, an index column
@@ -79,10 +84,11 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         '''
         # Loads supplementary file
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW)
-
         supplementary_file_location = os.path.join(folder_location,
                                                    SUPPLEMENTARY,
                                                    self.suplementary_gdf)
+
+                                               
         try:
             supl_gdf = gpd.read_file(supplementary_file_location)
         except FileNotFoundError as e:
@@ -96,37 +102,60 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                 identifier column.")
 
         # Extract identifier column name from geoPandas
-        supl_index = list(supl_gdf.columns).remove('geometry')[0]
+        supl_index = [i for i in list(supl_gdf.columns) if i != 'geometry'][0]
 
         # Loads csv
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW,
                                        self.folder_name)
         file_location = os.path.join(folder_location, self.file_name)
 
-        df = pd.read_csv(file_location)
+        df = pd.read_csv(file_location, parse_dates=["date"])
+
+        # Take to min allowed resolution
+        df["min_time_resolution"] = df.apply(lambda x: take_to_period_representative(x["date"], self.min_time_resolution), axis=1)
+        df.drop(columns=["date"], inplace=True)
+        df.rename(columns={"min_time_resolution": "date"}, inplace=True)
+        self.data_time_resolution = self.min_time_resolution
+
+        # Drop unecessary columns and rename index_id
+        df.drop(columns=self.columns_to_exclude, inplace=True)
+
+        # Drop nans on merging columns
+        df.dropna(subset=[self.index_id], inplace=True)
+        supl_gdf.dropna(subset=[supl_index], inplace=True)
 
         # Perform one-hot-encoding
-        df, encoding_dict = one_hot_encoding(
-            df, columns_to_exclude=self.columns_to_exclude + [index_name])
+        df, encoding_dict = one_hot_encoding(df, [self.index_id])
         self.set_encoding_dict(encoding_dict)
-
+    
         # merge df with geometry
-        gdf = supl_gdf.merge(df, left_on=supl_index, right_on=index_name)
+        df[self.index_id] = df[self.index_id].astype('int')
+        supl_gdf[supl_index] = supl_gdf[supl_index].astype('int')
+
+        # group by minimun resolution to speed things up
+        df = df.groupby(["date", self.index_id]).sum().reset_index()
+
+        gdf = supl_gdf.merge(df, left_on=supl_index, right_on=self.index_id)
 
         return gdf
 
-    def createData(self, df_geo, time_resolution):
+    def createData(self, df_geo, time_resolution, **kwargs):
+
+        try:
+            self.suplementary_gdf = kwargs["suplementary_gdf"]
+        except KeyError as e:
+            Logger.print_error("Supplementary geographic file must be provided.") 
 
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 
         # Reads the time series
         Logger.print_progress(f"Loads Data")
-        gdf_values = self.loadTimeSeriesShapefile()
+        gdf_values = self.loadTimeSeriesCSV()
 
         Logger.print_progress(f"Builds Overlay")
         # Overlays over the given geography
-        df = overlay_over_geo(
+        df = overlay_over_geo_malaria_tmp(
             gdf_values,
             df_geo,
             grouping_columns=[ID, DATE],

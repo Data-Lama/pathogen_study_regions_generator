@@ -42,7 +42,7 @@ class OfficialCommodity(VectorDataSource):
         return self.__name
 
     # Override
-    def createData(self, df_geo, time_resolution):
+    def createData(self, df_geo, time_resolution, **kwargs):
 
         # Checks time resolution
         isTimeResolutionValid(time_resolution)

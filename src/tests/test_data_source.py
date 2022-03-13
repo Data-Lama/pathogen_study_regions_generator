@@ -1,5 +1,8 @@
+import sys
+sys.path.append('src')
+
 import unittest
-from constants import DATE, GEO_DATA_FOLDER, ID, ID_1, ID_2, MONTH, WEEK, YEAR
+from constants import DATE, GEO_DATA_FOLDER, ID, ID_1, ID_2, MONTH, WEEK, YEAR, SUPPLEMENTARY_ARGS
 import geopandas
 import os
 from data_sources.specific.fb_mobility import FBMobility
@@ -35,6 +38,12 @@ class TestDataSources(unittest.TestCase):
         '''
 
         for data_source in vector_data_sources:
+            # fetch supplementary args
+            try:
+                supplementary_args = SUPPLEMENTARY_ARGS[data_source.__name__]
+            except KeyError:
+                supplementary_args = None
+
             ds = data_source()
             Logger.print_progress(f'Started: {ds.name} ({ds.ID})')
             Logger.enter_level()
@@ -42,7 +51,7 @@ class TestDataSources(unittest.TestCase):
                 Logger.print_progress(periodocity)
                 Logger.enter_level()
 
-                df = ds.createData(df_geo=df_geo, time_resolution=periodocity)
+                df = ds.createData(df_geo=df_geo, time_resolution=periodocity, suplementary_gdf=supplementary_args)
 
                 # Checks Id Column
                 self.assertTrue(ID in df.columns)
