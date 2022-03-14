@@ -30,10 +30,12 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                  file_name,
                  min_year,
                  max_year,
+                 suplementary_gdf,
                  index_id=ID,
                  min_time_resolution=DAY,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
-                 columns_to_exclude=[]):
+                 columns_of_interest=[],
+                 ):
         '''
         Assings the included groupings for the overlay stage
         '''
@@ -48,7 +50,8 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         self.included_groupings = included_groupings
         self.min_time_resolution = min_time_resolution
         self.encoding_dict = {}
-        self.columns_to_exclude = columns_to_exclude
+        self.columns_of_interest = columns_of_interest
+        self.suplementary_gdf = suplementary_gdf
 
     @property
     def ID(self):
@@ -102,7 +105,8 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                 identifier column.")
 
         # Extract identifier column name from geoPandas
-        supl_index = [i for i in list(supl_gdf.columns) if i != 'geometry'][0]
+        supl_idx = [i for i in list(supl_gdf.columns) if i != 'geometry'][0]
+        supl_gdf.rename(columns={supl_idx: self.index_id}, inplace=True)
 
         # Loads csv
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW,
@@ -117,12 +121,15 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         df.rename(columns={"min_time_resolution": "date"}, inplace=True)
         self.data_time_resolution = self.min_time_resolution
 
-        # Drop unecessary columns and rename index_id
-        df.drop(columns=self.columns_to_exclude, inplace=True)
+        # Drop unecessary columns 
+        columns_to_exclude = list(set(df.columns) - set(self.columns_of_interest))
+        columns_to_exclude.remove(self.index_id)
+        columns_to_exclude.remove("date")
+        df.drop(columns=columns_to_exclude, inplace=True)
 
         # Drop nans on merging columns
         df.dropna(subset=[self.index_id], inplace=True)
-        supl_gdf.dropna(subset=[supl_index], inplace=True)
+        supl_gdf.dropna(subset=[self.index_id], inplace=True)
 
         # Perform one-hot-encoding
         df, encoding_dict = one_hot_encoding(df, [self.index_id])
@@ -130,21 +137,20 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     
         # merge df with geometry
         df[self.index_id] = df[self.index_id].astype('int')
-        supl_gdf[supl_index] = supl_gdf[supl_index].astype('int')
+        supl_gdf[self.index_id] = supl_gdf[self.index_id].astype('int')
 
         # group by minimun resolution to speed things up
         df = df.groupby(["date", self.index_id]).sum().reset_index()
 
-        gdf = supl_gdf.merge(df, left_on=supl_index, right_on=self.index_id)
+        # merge
+        gdf = supl_gdf.merge(df, on=self.index_id)
+  
+        # Drop index_id
+        gdf.drop(columns=[self.index_id], inplace=True)
 
         return gdf
 
     def createData(self, df_geo, time_resolution, **kwargs):
-
-        try:
-            self.suplementary_gdf = kwargs["suplementary_gdf"]
-        except KeyError as e:
-            Logger.print_error("Supplementary geographic file must be provided.") 
 
         # Checks time resolution
         isTimeResolutionValid(time_resolution)

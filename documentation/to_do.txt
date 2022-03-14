@@ -1,10 +1,3 @@
-Me gustaria poder tener clases que se pueden inicializar con argumentos extras. 
-E.g. la clase de time_series_csv, para que funcione toca asociarlo con un archivo geografico. Ese archivo
-en este momento lo tengo definido como atributo de la clase porque realmente no deberia cambiar durante su uso.
-Que opinas? Por ahora me toco hacer un cambio que tambien funciona que es en todas las funciones de createData, agregue **kwargs
-y asi se puede usar el mismo nombre de funcion para todas las clases y me deja pasarle estos argumentos suplementarios
-si es necesario. 
-
 En la funcion de overlay functions, cambie el default de default_values to np.nan.
 Por otro lado, algo raro esta pasando porque el overlay esta intersectando municipios entre si, que no tiene mucho sentido
 porque el csv de malaria esta armado con el mismo SHP de municipios que se usa en geo...

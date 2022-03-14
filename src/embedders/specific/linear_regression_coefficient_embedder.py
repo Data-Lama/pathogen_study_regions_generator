@@ -40,7 +40,12 @@ class LinearRegressionCoefficientEmbedder(AbstractEmbbeder):
             # Scaler
             scaler = StandardScaler()
             X = scaler.fit_transform(X)
-            y = (y - np.mean(y)) / np.std(y)
+
+            if np.std(y) != 0:
+                y = (y - np.mean(y)) / np.std(y)
+            else:
+                y = (y - np.mean(y))
+
 
             # Regression
             reg = LinearRegression().fit(X, y)

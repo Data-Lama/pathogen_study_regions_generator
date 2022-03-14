@@ -44,7 +44,8 @@ def overlay_over_geo(df_values,
         for col in df.columns:
             if col in [ID, 'geometry']:
                 continue
-
+            print("COL")
+            print(col)
             if MAX in included_groupings:
                 response[f"{col}_{MAX}"] = df[col].max()
             if MIN in included_groupings:
@@ -111,30 +112,24 @@ def overlay_over_geo_malaria_tmp(df_values,
     # Constructs function for overlay
     def extract_values(df):
 
-        geo_id = df.iloc[0][ID]
-        area = df_geo[df_geo[ID] == geo_id].geometry.to_crs(
-            MANIPULATION_PROJECTION).area.values[0]
+        print(df.head())
 
-        response = {}
-        for col in df.columns:
-            if col in [ID, 'geometry']:
-                continue
+        df["area"] = df.geometry.to_crs(
+            MANIPULATION_PROJECTION).area
 
-            if MAX in included_groupings:
-                response[f"{col}_{MAX}"] = df[col].max()
-            if MIN in included_groupings:
-                response[f"{col}_{MIN}"] = df[col].min()
-            if TOTAL in included_groupings:
-                response[f"{col}_{TOTAL}"] = (
-                    df[col] *
-                    df.geometry.to_crs(MANIPULATION_PROJECTION).area).sum()
-            if AVERAGE in included_groupings:
-                response[f"{col}_{AVERAGE}"] = (df[col] * df.geometry.to_crs(
-                    MANIPULATION_PROJECTION).area).sum() / area
+        print(df.head())
 
-            return (pd.DataFrame([response]).reset_index())
+        cols_manipulate = list(set(df.columns) - set(grouping_columns))
+        print(cols_manipulate)
+
+        return (df[cols_manipulate] * df["area"]).sum()
+
 
     df_overlayed = geopandas.overlay(df_geo, df_values, how='intersection')
+
+    # df_overlayed = df_overlayed.groupby(grouping_columns).apply(
+    #     extract_values).reset_index()
+
     df_overlayed = df_overlayed.groupby(grouping_columns).sum().reset_index()
 
     rename_dict = {}

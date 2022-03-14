@@ -2,7 +2,7 @@
 import abc
 from abc import ABC, abstractmethod
 from clusterers.specific.identity_clusterer import IdentityClusterer
-from constants import CLUSTER_ID, DATE, GEOMETRY, ID, ID_1, ID_2
+from constants import CLUSTER_ID, DATE, GEOMETRY, ID, ID_1, ID_2, SUPPLEMENTARY_ARGS
 
 from embedders.specific.identity_embedder import IdentityEmbbeder
 from utils.logger import Logger
@@ -192,6 +192,7 @@ class AbstractFlow(ABC):
             Logger.print_progress(
                 f"Extracts {i} of {len(self.vector_data_sources)}: {ds.name} ({ds.ID}) "
             )
+
             # Extracts the data source
             df_data = ds.createData(geography, self.time_resolution)
             # To ensure uniqueness, adds the id to each column
