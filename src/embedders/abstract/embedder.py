@@ -20,7 +20,7 @@ class AbstractEmbbeder(ABC):
         pass
 
     @abstractmethod
-    def embeddData(self, df_vector=None, df_matrix=None):
+    def embeddData(self, df_vector=None, df_matrix=None, **kwargs):
         '''
         Method that embbeds the given geographical timeseries into a vector metric space.
 
