@@ -1,8 +1,9 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
 from utils.logger import Logger
-from constants import IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid
+from constants import IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, YEAR, isTimeResolutionValid
 import pandas as pd
+import numpy as np
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
@@ -81,12 +82,36 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         Logger.exit_level()
 
         Logger.print_progress(f"Builds Overlay")
-        # Overlays over the given geography
-        df = overlay_over_geo(df_values,
-                              df_geo,
-                              grouping_columns=[ID, DATE],
-                              included_groupings=self.included_groupings,
-                              default_values=self.default_values)
+        if self.data_time_resolution == YEAR:
+            # Overlays over the given geography
+            df = overlay_over_geo(df_values,
+                                  df_geo,
+                                  grouping_columns=[ID, DATE],
+                                  included_groupings=self.included_groupings,
+                                  default_values=self.default_values)
+        else:
+
+            all_dfs = []
+            dates = np.unique(df_values[DATE])
+            Logger.print_progress(
+                f"By Year. From {np.min(df_values[DATE].dt.year)} to {np.max(df_values[DATE].dt.year)}"
+            )
+            Logger.enter_level()
+            for date in dates:
+                Logger.print_progress(f"{date}")
+                df_temp = df_values[df_values[DATE] == date]
+                # Overlays over the given geography
+                df_ovelayed = overlay_over_geo(
+                    df_temp,
+                    df_geo,
+                    grouping_columns=[ID, DATE],
+                    included_groupings=self.included_groupings,
+                    default_values=self.default_values)
+
+                all_dfs.append(df_ovelayed)
+
+            df = pd.concat(all_dfs, ignore_index=True)
+            Logger.exit_level()
 
         Logger.print_progress(f"Changes Time Resolution")
         # Takes the time series to the desired time resolution

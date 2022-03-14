@@ -1,21 +1,17 @@
 # Test Flow
 
 from clusterers.specific.identity_clusterer import IdentityClusterer
-from constants import ID, WEEK
 from embedders.specific.identity_embedder import IdentityEmbbeder
 from flows.abstract.abstract_flow import AbstractFlow
 
-import geopandas
 
-
-class CustomFlowFromShapefile(AbstractFlow):
+class CustomFlow(AbstractFlow):
 
     def __init__(self,
                  ID,
                  name,
                  time_resolution,
-                 shapefile_location,
-                 id_column,
+                 geography,
                  vector_data_sources=[],
                  matrix_data_sources=[],
                  embedder=IdentityEmbbeder(),
@@ -30,10 +26,7 @@ class CustomFlowFromShapefile(AbstractFlow):
         self.__matrix_data_sources = matrix_data_sources
         self.__embedder = embedder
         self.__clusterer = clusterer
-
-        # Specific
-        self.shapefile_location = shapefile_location
-        self.id_column = id_column
+        self.__geography = geography
 
     @property
     def ID(self):
@@ -63,12 +56,6 @@ class CustomFlowFromShapefile(AbstractFlow):
     def clusterer(self):
         return (self.__clusterer)
 
-    def get_initial_geography(self):
-        '''
-        Initial geography for the flow.
-        This is set as a method, not a property since it might be expensive to execute.
-        It will only be excecuted once in the run() procedure.
-        '''
-        df = geopandas.read_file(self.shapefile_location)
-        df = df.rename(columns={self.id_column: ID})
-        return (df)
+    @property
+    def geography(self):
+        return (self.__geography)

@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 from constants import DATE, ID, TOTAL, DAY, WEEK, MONTH, YEAR
+from data_sources.abstract.vector_data_source import VectorDataSource
 from data_sources.general.data_from_time_series_csv import DataFromTimeSeriesOfCSV
 from utils.date_functions import get_dates_between_years_by_resolution
 
@@ -10,13 +11,18 @@ id = "malaria"
 name = "Malaria"
 
 
-class Malaria():
+class MockMalaria(VectorDataSource):
     '''
     Mock Malaria data source
     '''
 
-    ID = "malaria"
-    name = "Mock Malaria"
+    @property
+    def ID(self):
+        return ("mock_malaria")
+
+    @property
+    def name(self):
+        return ("Mock Malaria")
 
     def createData(self, df_geo, time_resolution, **kwargs):
 

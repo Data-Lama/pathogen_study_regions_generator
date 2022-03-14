@@ -5,13 +5,13 @@ from data_sources.general.data_from_weekly_gee_export import DataFromWeeklyGeeEx
 # Constants
 id = "precipitation_total"
 name = "Precipitation Total"
-file_name = "total_precipitation_2000_2020"
+file_name = "total_precipitation_2000_2020.shp"
 data_columns_dictionary = {"total_prec": "precipitation"}
 
 
-class PrecipitationTotal(DataFromWeeklyGeeExport):
+class PrecipitationAverage(DataFromWeeklyGeeExport):
     '''
-    Total Precipitation Data Source
+    Average Precipitation Data Source
     '''
 
     def __init__(self):

@@ -16,13 +16,14 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
 
     def __init__(self, id, name, folder_name, file_name,
                  data_columns_dictionary, min_year, max_year,
-                 included_groupings):
+                 included_groupings, default_values):
         '''
         '''
         super().__init__(id=id,
                          name=name,
                          data_time_resolution=WEEK,
-                         included_groupings=included_groupings)
+                         included_groupings=included_groupings,
+                         default_values=default_values)
 
         self.folder_name = folder_name
         self.data_columns = list(data_columns_dictionary.keys())
@@ -56,7 +57,7 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
         # Fixes Date
         df[DATE] = pd.to_datetime(df.date, unit='ms')
 
-        df = df[self.data_columns + ['geometry']].copy()
+        df = df[[DATE] + self.data_columns + ['geometry']].copy()
 
         # Renames columns
         df = df.rename(columns=dict([(col, self.rename_colum(col))

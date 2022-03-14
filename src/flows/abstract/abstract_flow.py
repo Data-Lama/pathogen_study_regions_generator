@@ -22,7 +22,7 @@ class AbstractFlow(ABC):
     # Clusterer
     clustered_ids = None
     # Final geography
-    final_geography = None
+    final_geometry = None
 
     # State
     has_ranned = False
@@ -84,16 +84,10 @@ class AbstractFlow(ABC):
         '''
         return IdentityClusterer()
 
-    # ------------------
-    # ---- Methods -----
-    # ------------------
-
-    @abstractmethod
-    def get_initial_geography(self):
+    @abc.abstractproperty
+    def geography(self):
         '''
-        Initial geography for the flow.
-        This is set as a method, not a property since it might be expensive to execute.
-        It will only be excecuted once in the run() procedure.
+        Geography for the flow
         '''
         pass
 
@@ -116,7 +110,7 @@ class AbstractFlow(ABC):
         self.df_matrix = None
         self.df_embedded_matrix = None
         self.clustered_ids = None
-        self.final_geography = None
+        self.final_geometry = None
         self.has_ranned = False
         self.data_loaded = False
         self.data_embedded = False
@@ -127,14 +121,14 @@ class AbstractFlow(ABC):
         # Assigns initial geography
         # ----------------------
         Logger.print_progress(f"Loads Initial Geography")
-        self.initial_geography = self.get_initial_geography()
+        self.initial_geometry = self.geography.get_geometry()
 
         # Loads Data
         # ----------------------
         Logger.print_progress("Loads Data")
         Logger.enter_level()
         # Assigns
-        self.df_vector, self.df_matrix = self.loadData(self.initial_geography)
+        self.df_vector, self.df_matrix = self.loadData(self.geography)
         self.data_loaded = True
         Logger.exit_level()
 
@@ -174,8 +168,9 @@ class AbstractFlow(ABC):
 
         Parameters
         ----------
-        df_geo : Geopandas.DataFrame
-            DataFrame with the desired geographical resolution. The df must include columns:
+        geography : Geography
+            Geography with the desired geometry.
+            The geometry is a DataFrame with the desired geographical resolution. The df must include columns:
                 - geometry
                 - ID : column with the unique ID
         '''
@@ -194,7 +189,7 @@ class AbstractFlow(ABC):
             )
 
             # Extracts the data source
-            df_data = ds.createData(geography, self.time_resolution)
+            df_data = ds.get_data(geography, self.time_resolution)
             # To ensure uniqueness, adds the id to each column
             col_dict = dict([(col, f"{ds.ID}_{col}") for col in df_data.columns
                              if col not in [ID, DATE]])
@@ -227,7 +222,7 @@ class AbstractFlow(ABC):
                 f"Extracts {i} of {len(self.matrix_data_sources)}: {ds.name} ({ds.ID}) "
             )
             # Extracts the data source
-            df_data = ds.createData(geography, self.time_resolution)
+            df_data = ds.get_data(geography, self.time_resolution)
             # To ensure uniqueness, adds the id to each column
             col_dict = dict([(col, f"{ds.ID}_{col}") for col in df_data.columns
                              if col not in [ID_1, ID_2, DATE]])
@@ -254,7 +249,7 @@ class AbstractFlow(ABC):
         After this method both df_embedded_vector and df_embedded_martrix will be assigned (if configured)
         '''
         if not self.data_loaded:
-            raise ('''Data has not been loaded. 
+            raise ValueError('''Data has not been loaded. 
                 Please load data before embedding''')
         self.df_embedded_vector, self.df_embedded_matrix = self.embedder.embeddData(
             df_vector=self.df_vector, df_matrix=self.df_matrix)
@@ -265,10 +260,10 @@ class AbstractFlow(ABC):
         After this method both df_embedded_vector and df_embedded_martrix will be assigned (if configured)
         '''
         if not self.data_embedded:
-            raise ('''Data has not been embedded. 
+            raise ValueError('''Data has not been embedded. 
                 Please embedd data before clustering. 
                 If you need access to the entire time series, please use an the IdentityEmbedder.'''
-                   )
+                             )
         self.clustered_ids = self.clusterer.clusterData(
             df_vector=self.df_embedded_vector,
             df_matrix=self.df_embedded_matrix)
@@ -288,29 +283,29 @@ class AbstractFlow(ABC):
 
         # Checks Integrity
         clust_ids = set(self.clustered_ids[ID].unique())
-        clust_geo = set(self.initial_geography[ID].unique())
+        clust_geo = set(self.initial_geometry[ID].unique())
 
         diff = clust_geo.difference(clust_ids)
         if len(diff) > 0:
-            raise ('''Error in building final geography.
+            raise ValueError('''Error in building final geography.
                     The geography ids: {diff} are missing in the clustered ids'''
-                   )
+                             )
 
         diff = clust_ids.difference(clust_geo)
         if len(diff) > 0:
-            raise ('''Error in building final geography.
+            raise ValueError('''Error in building final geography.
                     The clusterd ids: {diff} are missing in the geography ids'''
-                   )
+                             )
 
         # Dissolves
-        final_geography = self.initial_geography[[ID, GEOMETRY
-                                                  ]].merge(self.clustered_ids,
-                                                           on=[ID])
-        final_geography = final_geography.drop([ID], axis=1)
-        final_geography = final_geography.dissolve(by=CLUSTER_ID).reset_index()
+        final_geometry = self.initial_geometry[[ID, GEOMETRY
+                                                ]].merge(self.clustered_ids,
+                                                         on=[ID])
+        final_geometry = final_geometry.drop([ID], axis=1)
+        final_geometry = final_geometry.dissolve(by=CLUSTER_ID).reset_index()
 
         # Renames
-        final_geography = final_geography.rename(columns={CLUSTER_ID: ID})
+        final_geometry = final_geometry.rename(columns={CLUSTER_ID: ID})
 
         # Assigns
-        self.final_geography = final_geography
+        self.final_geometry = final_geometry

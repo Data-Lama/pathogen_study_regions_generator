@@ -42,7 +42,7 @@ def overlay_over_geo(df_values,
 
         response = {}
         for col in df.columns:
-            if col in [ID, 'geometry']:
+            if col in [ID, GEOMETRY, DATE]:
                 continue
             if MAX in included_groupings:
                 response[f"{col}_{MAX}"] = df[col].max()
@@ -58,10 +58,14 @@ def overlay_over_geo(df_values,
 
             return (pd.DataFrame([response]))
 
-    df_overlayed = geopandas.overlay(df_geo, df_values, how='intersection')
-    df_overlayed = df_overlayed.groupby(grouping_columns).apply(
-        extract_values).reset_index().drop(f'level_{len(grouping_columns)}',
-                                           axis=1)
+    df_overlayed = geopandas.overlay(df_geo,
+                                     df_values,
+                                     how='intersection',
+                                     keep_geom_type=True)
+
+    df_overlayed = df_overlayed.groupby(grouping_columns)
+    df_overlayed = df_overlayed.apply(extract_values).reset_index().drop(
+        f'level_{len(grouping_columns)}', axis=1)
 
     # Fills Nas
     if DATE in grouping_columns:
@@ -73,20 +77,22 @@ def overlay_over_geo(df_values,
             dfs.append(pd.DataFrame({ID: geo_ids, DATE: date}))
 
         df_global = pd.concat(dfs, ignore_index=True)
-        df_overlayed = df_global.merge(df_overlayed,
-                                       how='left').fillna(default_values)
+        df_overlayed = df_global.merge(df_overlayed, how='left')
 
     else:
-        df_overlayed = df_geo[[ID]].merge(df_overlayed,
-                                          how='left').fillna(default_values)
+        df_overlayed = df_geo[[ID]].merge(df_overlayed, how='left')
+
+    if default_values is not None:
+        df_overlayed = df_overlayed.fillna(default_values)
 
     return (df_overlayed)
 
+
 def overlay_over_geo_malaria_tmp(df_values,
-                     df_geo,
-                     grouping_columns=[ID, DATE],
-                     included_groupings=[TOTAL, AVERAGE, MAX, MIN],
-                     default_values=np.nan):
+                                 df_geo,
+                                 grouping_columns=[ID, DATE],
+                                 included_groupings=[TOTAL, AVERAGE, MAX, MIN],
+                                 default_values=np.nan):
     '''
     Method that overlays the given df over the geographic dataframe
 
@@ -110,15 +116,11 @@ def overlay_over_geo_malaria_tmp(df_values,
     # Constructs function for overlay
     def extract_values(df):
 
-
-        df["area"] = df.geometry.to_crs(
-            MANIPULATION_PROJECTION).area
-
+        df["area"] = df.geometry.to_crs(MANIPULATION_PROJECTION).area
 
         cols_manipulate = list(set(df.columns) - set(grouping_columns))
 
         return (df[cols_manipulate] * df["area"]).sum()
-
 
     df_overlayed = geopandas.overlay(df_geo, df_values, how='intersection')
 

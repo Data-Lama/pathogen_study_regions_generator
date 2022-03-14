@@ -5,7 +5,7 @@ from data_sources.general.data_from_weekly_gee_export import DataFromWeeklyGeeEx
 # Constants
 id = "temperature_min"
 name = "Min Temperature"
-file_name = "minimum_2m_air_temperature_2000_2020"
+file_name = "minimum_2m_air_temperature_2000_2020.shp"
 data_columns_dictionary = {"minimum_2m": "temperature"}
 
 

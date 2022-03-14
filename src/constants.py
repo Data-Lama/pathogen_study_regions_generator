@@ -47,6 +47,7 @@ AVERAGE = "average"
 # Data Stages constants
 RAW = "raw"
 SUPPLEMENTARY = "supplementary"
+CACHED = "cached"
 
 # Projection
 USUAL_PROJECTION = "EPSG:4326"

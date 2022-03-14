@@ -5,7 +5,7 @@ from data_sources.general.data_from_weekly_gee_export import DataFromWeeklyGeeEx
 # Constants
 id = "temperature_mean"
 name = "Mean Temperature"
-file_name = "mean_2m_air_temperature_2000_2020"
+file_name = "mean_2m_air_temperature_2000_2020.shp"
 data_columns_dictionary = {"mean_2m_ai": "temperature"}
 
 
