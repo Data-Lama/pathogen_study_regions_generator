@@ -100,7 +100,7 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
 
             # Takes the dates to their corresponding period
             df[DATE] = df[DATE].apply(
-                get_period_representative_function(time_resolution), axis=1)
+                get_period_representative_function(time_resolution))
 
             df = df.groupby([ID, DATE]).mean().reset_index()
 
@@ -114,7 +114,7 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
             # Creates merging column
             df_all_dates = pd.DataFrame({"__final_date": all_dates})
             df_all_dates[DATE] = df_all_dates["__final_date"].apply(
-                get_period_representative_function(time_resolution))
+                get_period_representative_function(self.data_time_resolution))
 
             # Merges
             df = df.merge(df_all_dates)

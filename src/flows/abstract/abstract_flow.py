@@ -2,7 +2,7 @@
 import abc
 from abc import ABC, abstractmethod
 from clusterers.specific.identity_clusterer import IdentityClusterer
-from constants import CLUSTER_ID, DATE, ID, ID_1, ID_2
+from constants import CLUSTER_ID, DATE, GEOMETRY, ID, ID_1, ID_2
 
 from embedders.specific.identity_embedder import IdentityEmbbeder
 from utils.logger import Logger
@@ -159,7 +159,6 @@ class AbstractFlow(ABC):
         Logger.print_progress("Builds Final Geography")
         Logger.enter_level()
         self.buildFinalGeography()
-        self.data_clustered = True
         Logger.exit_level()
 
         self.has_ranned = True
@@ -188,7 +187,8 @@ class AbstractFlow(ABC):
         Logger.enter_level()
         df_vector = None
         i = 1
-        for ds in self.vector_data_sources:
+        for data_source in self.vector_data_sources:
+            ds = data_source()
             Logger.print_progress(
                 f"Extracts {i} of {len(self.vector_data_sources)}: {ds.name} ({ds.ID}) "
             )
@@ -206,6 +206,8 @@ class AbstractFlow(ABC):
                                             on=[ID, DATE],
                                             how="outer")
             i += 1
+        if df_vector is not None:
+            df_vector = df_vector.sort_values('date').reset_index(drop=True)
 
         Logger.exit_level()
         Logger.print_progress(f"Done")
@@ -218,7 +220,8 @@ class AbstractFlow(ABC):
         # Matrix
         df_matrix = None
         i = 1
-        for ds in self.matrix_data_sources:
+        for data_source in self.matrix_data_sources:
+            ds = data_source()
             Logger.print_progress(
                 f"Extracts {i} of {len(self.matrix_data_sources)}: {ds.name} ({ds.ID}) "
             )
@@ -235,6 +238,8 @@ class AbstractFlow(ABC):
                 df_matrix = df_vector.merge(df_data,
                                             on=[ID_1, ID_2, DATE],
                                             how="outer")
+        if df_matrix is not None:
+            df_matrix = df_matrix.sort_values('date').reset_index(drop=True)
 
         Logger.exit_level()
         Logger.print_progress(f"Done")
@@ -264,7 +269,8 @@ class AbstractFlow(ABC):
                 If you need access to the entire time series, please use an the IdentityEmbedder.'''
                    )
         self.clustered_ids = self.clusterer.clusterData(
-            df_vector=self.df_vector, df_matrix=self.df_matrix)
+            df_vector=self.df_embedded_vector,
+            df_matrix=self.df_embedded_matrix)
 
     def buildFinalGeography(self):
         '''
@@ -272,7 +278,7 @@ class AbstractFlow(ABC):
         After this method, the attribute final_geography will be set
         '''
 
-        if not self.data_loaded:
+        if not self.data_clustered:
             raise ('''Data has not been clustered. 
                 Please cluster data before merging geography''')
 
@@ -296,8 +302,10 @@ class AbstractFlow(ABC):
                    )
 
         # Dissolves
-        final_geography = self.initial_geography.merge(self.clustered_ids,
-                                                       on=[ID])
+        final_geography = self.initial_geography[[ID, GEOMETRY
+                                                  ]].merge(self.clustered_ids,
+                                                           on=[ID])
+        final_geography = final_geography.drop([ID], axis=1)
         final_geography = final_geography.dissolve(by=CLUSTER_ID).reset_index()
 
         # Renames

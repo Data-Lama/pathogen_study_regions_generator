@@ -23,7 +23,8 @@ def get_dates_between_years_by_resolution(min_year, max_year, time_resolution):
 
     elif time_resolution == MONTH:
         start_date = pd.to_datetime(f"{min_year}-01-31")
-        advance_fun = lambda s: s + relativedelta(months=1)
+        advance_fun = lambda s: (s + relativedelta(days=1) + relativedelta(
+            months=1)) - relativedelta(days=1)
 
     elif time_resolution == YEAR:
         start_date = pd.to_datetime(f"{min_year}-12-31")
