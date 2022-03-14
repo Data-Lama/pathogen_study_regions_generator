@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
 
 import os
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 
@@ -35,6 +36,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                  min_time_resolution=DAY,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
                  columns_of_interest=[],
+                 default_values=np.nan
                  ):
         '''
         Assings the included groupings for the overlay stage
@@ -52,6 +54,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         self.encoding_dict = {}
         self.columns_of_interest = columns_of_interest
         self.suplementary_gdf = suplementary_gdf
+        self.default_values = default_values
 
     @property
     def ID(self):
@@ -166,6 +169,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
             df_geo,
             grouping_columns=[ID, DATE],
             included_groupings=self.included_groupings,
+            default_values=self.default_values
         )
 
         Logger.print_progress(f"Changes Time Resolution")

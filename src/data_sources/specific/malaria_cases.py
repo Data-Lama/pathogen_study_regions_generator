@@ -25,4 +25,5 @@ class Malaria(DataFromTimeSeriesOfCSV):
             index_id="muni_id",
             included_groupings=[TOTAL],
             columns_of_interest=["num_cases"],
+            default_values=0
             )
