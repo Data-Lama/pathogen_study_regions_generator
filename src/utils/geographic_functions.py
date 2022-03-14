@@ -44,8 +44,6 @@ def overlay_over_geo(df_values,
         for col in df.columns:
             if col in [ID, 'geometry']:
                 continue
-            print("COL")
-            print(col)
             if MAX in included_groupings:
                 response[f"{col}_{MAX}"] = df[col].max()
             if MIN in included_groupings:
@@ -112,15 +110,12 @@ def overlay_over_geo_malaria_tmp(df_values,
     # Constructs function for overlay
     def extract_values(df):
 
-        print(df.head())
 
         df["area"] = df.geometry.to_crs(
             MANIPULATION_PROJECTION).area
 
-        print(df.head())
 
         cols_manipulate = list(set(df.columns) - set(grouping_columns))
-        print(cols_manipulate)
 
         return (df[cols_manipulate] * df["area"]).sum()
 
