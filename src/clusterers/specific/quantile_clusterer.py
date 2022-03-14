@@ -10,13 +10,14 @@ class QuantileClusterer(AbstractClusterer):
     Clusterer that clusters by quantile
     '''
 
-    def __init__(self, ID, name, quantiles=[0.25, 0.5, 0.75]):
+    def __init__(self, ID, name, column_to_cluster, quantiles=[0.25, 0.5, 0.75]):
         super().__init__()
 
         # Abstarct Properties
         self.__ID = ID
         self.__name = name
         self.quantiles = quantiles
+        self.column_to_cluster = column_to_cluster
 
     @property
     def ID(self):
@@ -34,25 +35,19 @@ class QuantileClusterer(AbstractClusterer):
                 "The df_vector data cannot have duplicate values for any of the ids"
             )
 
-        if len(df_vector.columns) > 2:
-            raise Exception(
-                "This implementation only suports clutering over one column. Combine columns first"
-            )
-        
-        col = [x for x in df_vector.columns if x != con.ID][0]
             
-        quantiles_values = np.quantile(df_vector[col], self.quantiles)
+        quantiles_values = np.quantile(df_vector[self.column_to_cluster], self.quantiles)
 
         df_response = pd.DataFrame(columns=[con.ID, con.CLUSTER_ID])
         for idx, q in enumerate(quantiles_values):
             
-            df_tmp = pd.DataFrame({con.ID: df_vector[df_vector[col].lt(q)][con.ID].values})
+            df_tmp = pd.DataFrame({con.ID: df_vector[df_vector[self.column_to_cluster].lt(q)][con.ID].values})
             df_tmp[con.CLUSTER_ID] = idx
 
             df_response = pd.concat([df_response, df_tmp], ignore_index=True)
 
             # Keep only unclustered IDs
-            df_vector = df_vector[df_vector[col].ge(q)].copy()
+            df_vector = df_vector[df_vector[self.column_to_cluster].ge(q)].copy()
                 
         # Concat last cluster
         df_tmp = pd.DataFrame({con.ID: df_vector[con.ID].values})
