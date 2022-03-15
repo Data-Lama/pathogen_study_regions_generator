@@ -150,7 +150,7 @@ class AbstractFlow(ABC):
 
         # Builds final geography
         # ----------------------
-        Logger.print_progress("Builds Final Geography")
+        Logger.print_progress("Builds Final Geometry")
         Logger.enter_level()
         self.buildFinalGeography()
         Logger.exit_level()
