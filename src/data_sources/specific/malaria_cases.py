@@ -2,6 +2,7 @@
 
 from constants import TOTAL, DAY, WEEK, MONTH, YEAR
 from data_sources.general.data_from_time_series_csv import DataFromTimeSeriesOfCSV
+from geography.specific.colombian_municipalities import ColombianMunicipalities
 
 # Constants
 id = "malaria"
@@ -20,7 +21,7 @@ class Malaria(DataFromTimeSeriesOfCSV):
             file_name="anonymized_individual_data.csv",
             min_year=2006,
             max_year=2019,
-            suplementary_gdf="municipalities/municipalities.shp",
+            suplementary_geography=ColombianMunicipalities(),
             min_time_resolution=YEAR,
             index_id="muni_id",
             included_groupings=[TOTAL],

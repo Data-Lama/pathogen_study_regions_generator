@@ -3,6 +3,7 @@ from constants import GEO_DATA_FOLDER, ID
 from geography.abstract.abstact_geography import AbstractGeography
 import geopandas
 import os
+import constants as con
 
 
 class ColombianMunicipalities(AbstractGeography):
@@ -12,7 +13,7 @@ class ColombianMunicipalities(AbstractGeography):
     '''
 
     def __init__(self,
-                index):
+                index=con.ID):
 
         super().__init__()
         self.__index = index

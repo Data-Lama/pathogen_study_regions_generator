@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 class AbstractGeography(ABC):
 
     __geometry = None
-    __index = None
 
     # ---------------------------
     # -- Abstract Properties ----

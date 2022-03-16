@@ -2,3 +2,6 @@ En la funcion de overlay functions, cambie el default de default_values to np.na
 Por otro lado, algo raro esta pasando porque el overlay esta intersectando municipios entre si, que no tiene mucho sentido
 porque el csv de malaria esta armado con el mismo SHP de municipios que se usa en geo...
 Por alguna razon, el overlay me esta botando todas las columnas de DF. 
+
+Agregue un propiedad a la clase de geografia que se llama index para que se pueda 
+identificar cual es la columna que se esta usando de indice

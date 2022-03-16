@@ -1,6 +1,6 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
-from constants import PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
+from constants import GEOMETRY, PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
 
 import os
 import numpy as np
@@ -9,7 +9,7 @@ import geopandas as gpd
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function, take_to_period_representative
-from utils.geographic_functions import overlay_over_geo_malaria_tmp
+from utils.geographic_functions import overlay_over_geo
 from utils.logger import Logger
 from utils.preprocessing_functions import one_hot_encoding
 
@@ -31,7 +31,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                  file_name,
                  min_year,
                  max_year,
-                 suplementary_gdf,
+                 suplementary_geography,
                  index_id=ID,
                  min_time_resolution=DAY,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
@@ -53,7 +53,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         self.min_time_resolution = min_time_resolution
         self.encoding_dict = {}
         self.columns_of_interest = columns_of_interest
-        self.suplementary_gdf = suplementary_gdf
+        self.suplementary_geography = suplementary_geography
         self.default_values = default_values
 
     @property
@@ -88,28 +88,12 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
                     ... columns with the values of the data
 
         '''
-        # Loads supplementary file
-        folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW)
-        supplementary_file_location = os.path.join(folder_location,
-                                                   SUPPLEMENTARY,
-                                                   self.suplementary_gdf)
 
-                                               
-        try:
-            supl_gdf = gpd.read_file(supplementary_file_location)
-        except FileNotFoundError as e:
-            Logger.print_error(
-                "Supplementary geographic file for loading csv not found.")
-            raise e
-
-        if len(supl_gdf.columns) > 2:
-            raise (
-                "Supplementary geographic file must have only two columns. A 'geometry' column and any other desired\
-                identifier column.")
-
-        # Extract identifier column name from geoPandas
-        supl_idx = [i for i in list(supl_gdf.columns) if i != 'geometry'][0]
-        supl_gdf.rename(columns={supl_idx: self.index_id}, inplace=True)
+        # Loads supplementary geography
+        suplementary_gdf = self.suplementary_geography.get_geometry()
+        supl_idx = self.suplementary_geography.index
+        suplementary_gdf = suplementary_gdf[[supl_idx, GEOMETRY]].copy()
+        suplementary_gdf.rename(columns={supl_idx: self.index_id}, inplace=True)
 
         # Loads csv
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW,
@@ -132,7 +116,7 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
 
         # Drop nans on merging columns
         df.dropna(subset=[self.index_id], inplace=True)
-        supl_gdf.dropna(subset=[self.index_id], inplace=True)
+        suplementary_gdf.dropna(subset=[self.index_id], inplace=True)
 
         # Perform one-hot-encoding
         df, encoding_dict = one_hot_encoding(df, [self.index_id])
@@ -140,13 +124,13 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
     
         # merge df with geometry
         df[self.index_id] = df[self.index_id].astype('int')
-        supl_gdf[self.index_id] = supl_gdf[self.index_id].astype('int')
+        suplementary_gdf[self.index_id] = suplementary_gdf[self.index_id].astype('int')
 
         # group by minimun resolution to speed things up
         df = df.groupby(["date", self.index_id]).sum().reset_index()
 
         # merge
-        gdf = supl_gdf.merge(df, on=self.index_id)
+        gdf = suplementary_gdf.merge(df, on=self.index_id)
   
         # Drop index_id
         gdf.drop(columns=[self.index_id], inplace=True)
@@ -163,14 +147,35 @@ class DataFromTimeSeriesOfCSV(VectorDataSource, ABC):
         gdf_values = self.loadTimeSeriesCSV()
 
         Logger.print_progress(f"Builds Overlay")
-        # Overlays over the given geography
-        df = overlay_over_geo_malaria_tmp(
-            gdf_values,
-            df_geo,
-            grouping_columns=[ID, DATE],
-            included_groupings=self.included_groupings,
-            default_values=self.default_values
-        )
+        if self.data_time_resolution == YEAR:
+                    # Overlays over the given geography
+                    df = overlay_over_geo(gdf_values,
+                                        df_geo,
+                                        grouping_columns=[ID, DATE],
+                                        included_groupings=self.included_groupings,
+                                        default_values=self.default_values)
+        else:
+            all_dfs = []
+            dates = np.unique(gdf_values[DATE])
+            Logger.print_progress(
+                f"By Year. From {np.min(gdf_values[DATE].dt.year)} to {np.max(gdf_values[DATE].dt.year)}"
+            )
+            Logger.enter_level()
+            for date in dates:
+                Logger.print_progress(f"{date}")
+                df_temp = gdf_values[gdf_values[DATE] == date]
+                # Overlays over the given geography
+                df_ovelayed = overlay_over_geo(
+                    df_temp,
+                    df_geo,
+                    grouping_columns=[ID, DATE],
+                    included_groupings=self.included_groupings,
+                    default_values=self.default_values)
+
+                all_dfs.append(df_ovelayed)
+
+            df = pd.concat(all_dfs, ignore_index=True)
+            Logger.exit_level()
 
         Logger.print_progress(f"Changes Time Resolution")
         # Takes the time series to the desired time resolution
