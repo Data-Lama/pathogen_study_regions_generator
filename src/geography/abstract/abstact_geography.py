@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 class AbstractGeography(ABC):
 
     __geometry = None
+    __index = None
 
     # ---------------------------
     # -- Abstract Properties ----
@@ -21,6 +22,13 @@ class AbstractGeography(ABC):
     def name(self):
         '''
         Human readable name for the flow
+        '''
+        pass
+
+    @abc.abstractproperty    
+    def index(self):
+        '''
+        Index by which unique geometries are identified
         '''
         pass
 
@@ -43,3 +51,4 @@ class AbstractGeography(ABC):
             self.__geometry = self.build_geometry()
 
         return (self.__geometry)
+

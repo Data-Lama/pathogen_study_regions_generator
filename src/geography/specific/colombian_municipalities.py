@@ -11,6 +11,13 @@ class ColombianMunicipalities(AbstractGeography):
     
     '''
 
+    def __init__(self,
+                index):
+
+        super().__init__()
+        self.__index = index
+
+
     @property
     def ID(self):
         return ("colombian_municipalities")
@@ -18,6 +25,10 @@ class ColombianMunicipalities(AbstractGeography):
     @property
     def name(self):
         return ("Colombian Municipalities")
+
+    @property
+    def index(self):
+        return self.__index
 
     def build_geometry(self):
         df = geopandas.read_file(
