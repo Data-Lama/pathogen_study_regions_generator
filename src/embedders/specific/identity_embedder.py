@@ -8,7 +8,7 @@ class IdentityEmbbeder(AbstractEmbbeder):
     ID = "identity_embedder"
     name = "Identity Embedder"
 
-    def embeddData(self, df_vector=None, df_matrix=None):
+    def embeddData(self, current_geography, df_vector=None, df_matrix=None):
         '''
         Returns the input as it is given
         '''

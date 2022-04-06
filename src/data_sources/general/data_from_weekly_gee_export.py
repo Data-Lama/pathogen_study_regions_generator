@@ -6,10 +6,10 @@ from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, 
 import geopandas
 import pandas as pd
 
-from data_sources.general.data_from_time_series_shapefile import DataFromTimeSeriesOfShapefiles
+from data_sources.general.data_from_geopandas import DataFromGeoPandas
 
 
-class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
+class DataFromWeeklyGeeExport(DataFromGeoPandas):
     '''
     Main class for extraction for yearly shapefiles
     '''
@@ -42,7 +42,7 @@ class DataFromWeeklyGeeExport(DataFromTimeSeriesOfShapefiles):
         return (self.data_columns_dictionary[col])
 
     # Override
-    def loadTimeSeriesShapefile(self):
+    def loadGeopandasDataFrame(self):
 
         # Loads the shapefile
         folder_location = os.path.join(PIPELINE_DATA_FOLDER, RAW,

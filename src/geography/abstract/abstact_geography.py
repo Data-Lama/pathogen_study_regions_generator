@@ -1,11 +1,25 @@
 # Abstract class for implementing a Geography
 import abc
 from abc import ABC, abstractmethod
+import uuid
+from constants import ID
 
 
 class AbstractGeography(ABC):
 
+    # Local Geometry (read only)
     __geometry = None
+    # Unique identifier (read only)
+    # This attribute is used in conjuction with is stable to prevent missreading cache files
+    __uuid = None
+
+    # Stable Variable
+    # Determines if the geoemtry is stable across time or depends upon excecution
+    is_stable = False
+
+    # Sub Geography (From previuos flow excecutions for example)
+    sub_geography = None
+    df_map = None
 
     # ---------------------------
     # -- Abstract Properties ----
@@ -24,16 +38,7 @@ class AbstractGeography(ABC):
         '''
         pass
 
-    @abc.abstractproperty    
-    def index(self):
-        '''
-        Index by which unique geometries are identified
-        '''
-        pass
-
-    # ------------------
-    # ---- Methods -----
-    # ------------------
+    # Abstract Method
     @abstractmethod
     def build_geometry(self):
         '''
@@ -41,6 +46,9 @@ class AbstractGeography(ABC):
         '''
         pass
 
+    # ------------------
+    # ---- Methods -----
+    # ------------------
     def get_geometry(self):
         '''
         Method that gets geometry for the geography.
@@ -51,3 +59,11 @@ class AbstractGeography(ABC):
 
         return (self.__geometry)
 
+    def get_uuid(self):
+        '''
+        Return uuid. This uuid is unique for the lifecycle of the component
+        '''
+        if self.__uuid is None:
+            self.__uuid = uuid.uuid4()
+
+        return (self.__uuid)

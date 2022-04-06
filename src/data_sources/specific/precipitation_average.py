@@ -31,9 +31,9 @@ class PrecipitationAverage(DataFromWeeklyGeeExport):
 
         df = super().loadTimeSeriesShapefile()
 
-        # Divides by ares
+        # Divides by areas
         df[list(data_columns_dictionary.values())] = df[list(
-            data_columns_dictionary.values())] / df.geometry.to_crs(
-                MANIPULATION_PROJECTION).area
+            data_columns_dictionary.values())].div(
+                df.geometry.to_crs(MANIPULATION_PROJECTION).area, axis='rows')
 
         return (df)

@@ -28,7 +28,7 @@ class SklearnVectorClusterer(AbstractClusterer):
     def name(self):
         return (self.__name)
 
-    def clusterData(self, df_vector=None, df_matrix=None):
+    def clusterData(self, current_geography, df_vector=None, df_matrix=None):
 
         if df_vector[con.ID].value_counts().iloc[0] > 1:
             raise Exception(

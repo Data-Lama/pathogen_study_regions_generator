@@ -10,7 +10,7 @@ class IdentityClusterer(AbstractClusterer):
     ID = "identity_clusterer"
     name = "Identity Clusterer"
 
-    def clusterData(self, df_vector=None, df_matrix=None):
+    def clusterData(self, current_geography, df_vector=None, df_matrix=None):
 
         # If both vector and matrix are providedm it gives priority to
         # to the vector

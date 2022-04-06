@@ -6,11 +6,11 @@ from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, 
 import geopandas
 import pandas as pd
 
-from data_sources.general.data_from_time_series_shapefile import DataFromTimeSeriesOfShapefiles
+from data_sources.general.data_from_geopandas import DataFromGeoPandas
 from utils.logger import Logger
 
 
-class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
+class DataFromYearlyShapefiles(DataFromGeoPandas):
     '''
     Main class for extraction for yearly shapefiles
     '''
@@ -54,7 +54,7 @@ class DataFromYearlyShapefiles(DataFromTimeSeriesOfShapefiles):
         self.max_year = max_year
 
     # Override
-    def loadTimeSeriesShapefile(self):
+    def loadGeopandasDataFrame(self):
 
         all_dfs = []
 

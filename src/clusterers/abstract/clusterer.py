@@ -20,12 +20,14 @@ class AbstractClusterer(ABC):
         pass
 
     @abstractmethod
-    def clusterData(self, df_vector=None, df_matrix=None):
+    def clusterData(self, current_geography, df_vector=None, df_matrix=None):
         '''
         Method that clusters the embedded metric space parameters.
 
         Parameters
         ----------
+        current_geography : Geography
+            Current geography object for the flow. 
         df_vector : pandas.DataFrame
             DataFrame with a single row per geographical region (vector). Must include the columns:
                 - ID : identifier of the corresponding polygon.

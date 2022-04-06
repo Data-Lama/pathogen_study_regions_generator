@@ -12,14 +12,14 @@ import numpy as np
 class LinearRegressionCoefficientEmbedder(AbstractEmbbeder):
 
     ID = "linear_regression_coefficient_embedder"
-    name = "Linear Regression coefficient Embeder"
+    name = "Linear Regression Coefficient Embeder"
 
     def __init__(self, target_col):
         super().__init__()
 
         self.target_col = target_col
 
-    def embeddData(self, df_vector=None, df_matrix=None):
+    def embeddData(self, current_geography, df_vector=None, df_matrix=None):
 
         df_vector = df_vector.dropna()
         # Extract observed variable columns
@@ -46,7 +46,6 @@ class LinearRegressionCoefficientEmbedder(AbstractEmbbeder):
             else:
                 y = (y - np.mean(y))
 
-
             # Regression
             reg = LinearRegression().fit(X, y)
 
@@ -58,4 +57,4 @@ class LinearRegressionCoefficientEmbedder(AbstractEmbbeder):
 
         df_emdedded = pd.DataFrame(imnersion)
 
-        return (df_emdedded, None)
+        return (df_emdedded, df_matrix)

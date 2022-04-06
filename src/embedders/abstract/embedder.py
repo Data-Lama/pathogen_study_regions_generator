@@ -20,12 +20,15 @@ class AbstractEmbbeder(ABC):
         pass
 
     @abstractmethod
-    def embeddData(self, df_vector=None, df_matrix=None):
+    def embeddData(self, current_geography, df_vector=None, df_matrix=None):
         '''
-        Method that embbeds the given geographical timeseries into a vector metric space.
+        Method that embbeds the given geographical timeseries into a vector metric space. If the embedder does
+        not use the vector or matrix, should return the received dataframe unaltered to enable the flow in the pipeline
 
         Parameters
         ----------
+        current_geography : Geography
+            Current geography object for the flow. 
         df_vector : pandas.DataFrame
             DataFrame with the geographical timeseries as vector. Must have the following columns:
                 - ID : identifier of the corresponding polygon.

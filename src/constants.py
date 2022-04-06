@@ -19,9 +19,11 @@ GEO_DATA_FOLDER = CONFIG['geo']
 ID = "ID"
 ID_1 = "ID_1"
 ID_2 = "ID_2"
+SUB_ID = "SUB_ID"
 DATE = "date"
 VALUE = "value"
 GEOMETRY = "geometry"
+AREA_COL = "__polygon_area"
 CLUSTER_ID = "cluster_id"
 
 # Time resolutions
@@ -42,7 +44,19 @@ def isTimeResolutionValid(tr):
 MAX = "max"
 MIN = "min"
 TOTAL = "total"
+SUM = "sum"
 AVERAGE = "average"
+
+
+# Build grouping name
+def make_grouping_name(col, grouping):
+    return (f"{col}_{grouping}")
+
+
+# Get grouping from column
+def get_grouping(col):
+    return (col.split("_")[-1])
+
 
 # Data Stages constants
 RAW = "raw"
@@ -52,9 +66,13 @@ CACHED = "cached"
 # Projection
 USUAL_PROJECTION = "EPSG:4326"
 MANIPULATION_PROJECTION = 'EPSG:3857'
+BUFFER_PROJECTION = "EPSG:3395"
 
 # Identation Variables
 IDENT = "   "
 
 # Testing constants
 SUPPLEMENTARY_ARGS = {"Malaria": "municipalities/municipalities.shp"}
+
+# Graph Constants
+WEIGHT = "weight"

@@ -1,6 +1,6 @@
 # Data source from an official commodity.
 # Uses Yahoo finance API
-from constants import IDENT, DATE, ID, VALUE, isTimeResolutionValid
+from constants import IDENT, DATE, ID, SUB_ID, VALUE, isTimeResolutionValid
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 
@@ -71,3 +71,24 @@ class OfficialCommodity(VectorDataSource):
         df = df_geo[[ID]].merge(df, how='cross')
 
         return (df)
+
+    def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
+                                         df_map):
+
+        # Checks time resolution
+        isTimeResolutionValid(time_resolution)
+
+        # Gets the data from the sub_geography
+        df = self.get_data(sub_geography, time_resolution)
+
+        # Maps the ids
+        df.rename(columns={ID: SUB_ID}, inplace=True)
+        df = df.merge(df_map)
+        df.drop(SUB_ID, axis=1, inplace=True)
+
+        # Agglomerates
+        # Non geographic datasource. Simply drops duplicates
+        # Groups and excecutes
+        df_final = df.drop_duplicates(subset=[ID, DATE])
+
+        return (df_final)

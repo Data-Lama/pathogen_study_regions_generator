@@ -3,7 +3,7 @@
 # Constants
 
 from re import A
-from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, USUAL_PROJECTION
+from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, SUB_ID, USUAL_PROJECTION, isTimeResolutionValid
 from data_sources.abstract.matrix_data_source import MatrixDataSource
 from utils.date_functions import get_period_representative_function
 from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES, build_movement
@@ -35,6 +35,9 @@ class FBMobility(MatrixDataSource):
 
     # Override
     def createData(self, df_geo, time_resolution):
+
+        # Checks time resolution
+        isTimeResolutionValid(time_resolution)
 
         # Directory
         directory = os.path.join(PIPELINE_DATA_FOLDER, RAW, FB_MOVEMENT,
@@ -93,3 +96,27 @@ class FBMobility(MatrixDataSource):
                                            ID_2]).sum().reset_index()
 
         return df_movement
+
+    def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
+                                         df_map):
+
+        # Checks time resolution
+        isTimeResolutionValid(time_resolution)
+
+        # Gets the data from the sub_geography
+        df = self.get_data(sub_geography, time_resolution)
+
+        # Maps the ids
+        # id 1
+        df.rename(columns={ID_1: SUB_ID}, inplace=True)
+        df = df.merge(df_map).rename(columns={ID: ID_1})
+        df.drop(SUB_ID, axis=1, inplace=True)
+        # Id 2
+        df.rename(columns={ID_2: SUB_ID}, inplace=True)
+        df = df.merge(df_map).rename(columns={ID: ID_2})
+        df.drop(SUB_ID, axis=1, inplace=True)
+
+        # Agglomerates
+        df_final = df.groupby([ID_1, ID_2, DATE]).sum().reset_index()
+
+        return (df_final)

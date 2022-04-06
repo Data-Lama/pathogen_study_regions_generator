@@ -24,7 +24,7 @@ class MockMalaria(VectorDataSource):
     def name(self):
         return ("Mock Malaria")
 
-    def createData(self, df_geo, time_resolution, **kwargs):
+    def createData(self, df_geo, time_resolution):
 
         all_dates = get_dates_between_years_by_resolution(
             min_year=2006, max_year=2019, time_resolution=time_resolution)
@@ -40,3 +40,9 @@ class MockMalaria(VectorDataSource):
 
         # Orders columns
         return (df_data)
+
+    def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
+                                         df_map):
+
+        return (self.createData(df_map[[ID]].drop_duplicates(),
+                                time_resolution))

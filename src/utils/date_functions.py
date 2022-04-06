@@ -7,6 +7,10 @@ from dateutil.relativedelta import relativedelta
 from constants import DAY, MONTH, WEEK, YEAR, isTimeResolutionValid
 
 
+def get_today():
+    return (pd.to_datetime("today"))
+
+
 def get_dates_between_years_by_resolution(min_year, max_year, time_resolution):
     '''
     Gets an array of dates corresponding to the given periodicity between the given years (inclusive)

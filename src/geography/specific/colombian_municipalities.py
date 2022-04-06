@@ -11,13 +11,8 @@ class ColombianMunicipalities(AbstractGeography):
     Geography for the municipalities of Colombia
     
     '''
-
-    def __init__(self,
-                index=con.ID):
-
-        super().__init__()
-        self.__index = index
-
+    # Stable Geometry
+    is_stable = True
 
     @property
     def ID(self):

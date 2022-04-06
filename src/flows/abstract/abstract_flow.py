@@ -1,6 +1,7 @@
 # Abstract class for implementing a flow
 import abc
 from abc import ABC, abstractmethod
+from asyncio.log import logger
 from clusterers.specific.identity_clusterer import IdentityClusterer
 from constants import CLUSTER_ID, DATE, GEOMETRY, ID, ID_1, ID_2, SUPPLEMENTARY_ARGS
 
@@ -29,6 +30,10 @@ class AbstractFlow(ABC):
     data_loaded = False
     data_embedded = False
     data_clustered = False
+
+    # Vector and Matrix Data Names
+    vector_data_sources_names = []
+    matrix_data_sources_names = []
 
     # ---------------------------
     # -- Abstract Properties ----
@@ -71,7 +76,7 @@ class AbstractFlow(ABC):
     @abc.abstractproperty
     def embedder(self):
         '''
-        Embedder of the flow. 
+        Embedder or array of embedders of the flow. 
         Default: identity
         '''
         return IdentityEmbbeder()
@@ -94,7 +99,7 @@ class AbstractFlow(ABC):
     # ------------------
     # ---- Methods -----
     # ------------------
-    def run(self):
+    def run(self, warnings_as_errors=False):
         '''
         Method that runs the entire flow with the designated elements.
         At each point the pipeline assignes the corresponding element.
@@ -103,6 +108,9 @@ class AbstractFlow(ABC):
         3. Embbeds the data sources
         4. Clusteres the embedded sources.
         '''
+
+        # Sets the warning parameter
+        self.warnings_as_errors = warnings_as_errors
 
         # Resets attributes
         self.df_vector = None
@@ -184,6 +192,10 @@ class AbstractFlow(ABC):
         i = 1
         for data_source in self.vector_data_sources:
             ds = data_source()
+
+            # Adds Name
+            self.vector_data_sources_names.append(ds.name)
+
             Logger.print_progress(
                 f"Extracts {i} of {len(self.vector_data_sources)}: {ds.name} ({ds.ID}) "
             )
@@ -217,7 +229,12 @@ class AbstractFlow(ABC):
         df_matrix = None
         i = 1
         for data_source in self.matrix_data_sources:
+
             ds = data_source()
+
+            # Adds Name
+            self.matrix_data_sources_names.append(ds.name)
+
             Logger.print_progress(
                 f"Extracts {i} of {len(self.matrix_data_sources)}: {ds.name} ({ds.ID}) "
             )
@@ -251,8 +268,25 @@ class AbstractFlow(ABC):
         if not self.data_loaded:
             raise ValueError('''Data has not been loaded. 
                 Please load data before embedding''')
-        self.df_embedded_vector, self.df_embedded_matrix = self.embedder.embeddData(
-            df_vector=self.df_vector, df_matrix=self.df_matrix)
+
+        embedders = self.embedder
+        if not isinstance(self.embedder, list):
+            embedders = [self.embedder]
+
+        Logger.print_progress(f"Found {len(embedders)} embedders")
+        Logger.enter_level()
+
+        self.df_embedded_vector, self.df_embedded_matrix = self.df_vector, self.df_matrix
+
+        for emb in embedders:
+
+            Logger.print_progress(emb.name)
+            self.df_embedded_vector, self.df_embedded_matrix = emb.embeddData(
+                current_geography=self.geography,
+                df_vector=self.df_embedded_vector,
+                df_matrix=self.df_embedded_matrix)
+
+        Logger.exit_level()
 
     def clusterData(self):
         '''
@@ -265,6 +299,7 @@ class AbstractFlow(ABC):
                 If you need access to the entire time series, please use an the IdentityEmbedder.'''
                              )
         self.clustered_ids = self.clusterer.clusterData(
+            current_geography=self.geography,
             df_vector=self.df_embedded_vector,
             df_matrix=self.df_embedded_matrix)
 
@@ -287,15 +322,20 @@ class AbstractFlow(ABC):
 
         diff = clust_geo.difference(clust_ids)
         if len(diff) > 0:
-            raise ValueError('''Error in building final geography.
-                    The geography ids: {diff} are missing in the clustered ids'''
-                             )
+            text = f'''Error in building final geography. The geography ids: {diff} are missing in the clustered ids'''
+            if self.warnings_as_errors:
+                raise ValueError(text)
+            else:
+                Logger.print_warning(text)
 
         diff = clust_ids.difference(clust_geo)
         if len(diff) > 0:
-            raise ValueError('''Error in building final geography.
-                    The clusterd ids: {diff} are missing in the geography ids'''
-                             )
+
+            text = f'''Error in building final geography. The clusterd ids: {diff} are missing in the geography ids'''
+            if self.warnings_as_errors:
+                raise ValueError(text)
+            else:
+                Logger.print_warning(text)
 
         # Dissolves
         final_geometry = self.initial_geometry[[ID, GEOMETRY

@@ -1,20 +1,18 @@
-# Data source from a time series of shapefiles
+# Data source from a geopandas (abstract)
 from abc import ABC, abstractmethod
 from utils.logger import Logger
-from constants import IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, YEAR, isTimeResolutionValid
+from constants import AREA_COL, GEOMETRY, DATE, AVERAGE, ID, MANIPULATION_PROJECTION, MAX, MIN, SUB_ID, TOTAL, YEAR, isTimeResolutionValid
 import pandas as pd
 import numpy as np
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
-from utils.geographic_functions import overlay_over_geo
+from utils.geographic_functions import agglomerate_data_frame, overlay_over_geo
 
 
-class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
+class DataFromGeoPandas(VectorDataSource, ABC):
     '''
-    Main class for extraction from a time series of shapefiles. 
-    This abstract class is ment to handle data sources where a time series of shapefiles 
-    can be constructed from any source. This class expects the methods loadTimeSeriesShapefile to be
+    Main class for extraction from any file representation that endsup being a geopandas
     implemented, to later overlay it over the received geography and take it to the time resolution.
     '''
 
@@ -54,9 +52,9 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         return self.__name
 
     @abstractmethod
-    def loadTimeSeriesShapefile(self):
+    def loadGeopandasDataFrame(self):
         '''
-        Method that loads the time series shapefile.
+        Method that loads the dataframe
 
         Returns
         -------
@@ -78,7 +76,7 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         # Reads the time series shapefile
         Logger.print_progress(f"Loads Data")
         Logger.enter_level()
-        df_values = self.loadTimeSeriesShapefile()
+        df_values = self.loadGeopandasDataFrame()
         Logger.exit_level()
 
         Logger.print_progress(f"Builds Overlay")
@@ -94,7 +92,7 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
             all_dfs = []
             dates = np.unique(df_values[DATE])
             Logger.print_progress(
-                f"By Year. From {np.min(df_values[DATE].dt.year)} to {np.max(df_values[DATE].dt.year)}"
+                f"By Dates. From {np.min(df_values[DATE].dt.year)} to {np.max(df_values[DATE].dt.year)}"
             )
             Logger.enter_level()
             for date in dates:
@@ -149,3 +147,31 @@ class DataFromTimeSeriesOfShapefiles(VectorDataSource, ABC):
         # Orders columns
         return (df[[ID, DATE] +
                    df.columns.difference([ID, DATE]).values.tolist()].copy())
+
+    def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
+                                         df_map):
+
+        # Checks time resolution
+        isTimeResolutionValid(time_resolution)
+
+        # Gets the data from the sub_geography
+        df = self.get_data(sub_geography, time_resolution)
+
+        # Attaches Areas
+        df_area = sub_geography.get_geometry()[[ID, GEOMETRY]].copy()
+        df_area[AREA_COL] = df_area[GEOMETRY].to_crs(
+            MANIPULATION_PROJECTION).area
+
+        df = df.merge(df_area)
+        #df.drop(GEOMETRY, index=1, inplace=True)
+
+        # Maps the ids
+        df.rename(columns={ID: SUB_ID}, inplace=True)
+        df = df.merge(df_map)
+        df.drop(SUB_ID, axis=1, inplace=True)
+
+        # Agglomerates
+        df_final = agglomerate_data_frame(df, [ID, DATE],
+                                          included_groupings=[])
+
+        return (df_final)
