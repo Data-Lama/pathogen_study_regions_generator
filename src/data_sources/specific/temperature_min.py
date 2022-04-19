@@ -1,6 +1,6 @@
 # Min temperature data source
 from constants import MIN
-from data_sources.general.data_from_weekly_gee_export import DataFromWeeklyGeeExport
+from data_sources.general.data_from_gee_export import DataFromGeeExport
 
 # Constants
 id = "temperature_min"
@@ -9,7 +9,7 @@ file_name = "minimum_2m_air_temperature_2000_2020.shp"
 data_columns_dictionary = {"minimum_2m": "temperature"}
 
 
-class TemperatureMin(DataFromWeeklyGeeExport):
+class TemperatureMin(DataFromGeeExport):
     '''
     Min temperature Data Source
     '''

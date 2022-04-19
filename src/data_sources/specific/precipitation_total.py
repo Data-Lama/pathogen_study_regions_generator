@@ -1,6 +1,6 @@
 # Total precipitation data source
-from constants import TOTAL
-from data_sources.general.data_from_weekly_gee_export import DataFromWeeklyGeeExport
+from constants import TOTAL, WEEK
+from data_sources.general.data_from_gee_export import DataFromGeeExport
 
 # Constants
 id = "precipitation_total"
@@ -9,7 +9,7 @@ file_name = "total_precipitation_2000_2020.shp"
 data_columns_dictionary = {"total_prec": "precipitation"}
 
 
-class PrecipitationTotal(DataFromWeeklyGeeExport):
+class PrecipitationTotal(DataFromGeeExport):
     '''
     Total Precipitation Data Source
     '''
@@ -23,4 +23,5 @@ class PrecipitationTotal(DataFromWeeklyGeeExport):
                          min_year=2000,
                          max_year=2020,
                          included_groupings=[TOTAL],
-                         default_values=None)
+                         default_values=0,
+                         data_time_resolution=WEEK)

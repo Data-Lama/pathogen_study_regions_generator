@@ -80,36 +80,29 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         Logger.exit_level()
 
         Logger.print_progress(f"Builds Overlay")
-        if self.data_time_resolution == YEAR:
+
+        # Iterates over every date
+        all_dfs = []
+        dates = np.unique(df_values[DATE])
+        Logger.print_progress(
+            f"By Dates. From {np.min(df_values[DATE].dt.year)} to {np.max(df_values[DATE].dt.year)}"
+        )
+        Logger.enter_level()
+        for date in dates:
+            Logger.print_progress(f"{date}")
+            df_temp = df_values[df_values[DATE] == date]
             # Overlays over the given geography
-            df = overlay_over_geo(df_values,
-                                  df_geo,
-                                  grouping_columns=[ID, DATE],
-                                  included_groupings=self.included_groupings,
-                                  default_values=self.default_values)
-        else:
+            df_ovelayed = overlay_over_geo(
+                df_temp,
+                df_geo,
+                grouping_columns=[ID, DATE],
+                included_groupings=self.included_groupings,
+                default_values=self.default_values)
 
-            all_dfs = []
-            dates = np.unique(df_values[DATE])
-            Logger.print_progress(
-                f"By Dates. From {np.min(df_values[DATE].dt.year)} to {np.max(df_values[DATE].dt.year)}"
-            )
-            Logger.enter_level()
-            for date in dates:
-                Logger.print_progress(f"{date}")
-                df_temp = df_values[df_values[DATE] == date]
-                # Overlays over the given geography
-                df_ovelayed = overlay_over_geo(
-                    df_temp,
-                    df_geo,
-                    grouping_columns=[ID, DATE],
-                    included_groupings=self.included_groupings,
-                    default_values=self.default_values)
+            all_dfs.append(df_ovelayed)
 
-                all_dfs.append(df_ovelayed)
-
-            df = pd.concat(all_dfs, ignore_index=True)
-            Logger.exit_level()
+        df = pd.concat(all_dfs, ignore_index=True)
+        Logger.exit_level()
 
         Logger.print_progress(f"Changes Time Resolution")
         # Takes the time series to the desired time resolution
