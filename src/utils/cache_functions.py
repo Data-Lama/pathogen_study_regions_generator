@@ -10,5 +10,5 @@ def build_cache_name(data_source, geography, time_resolution):
         return (f"{data_source.ID}-{geography.ID}-{time_resolution}.csv")
     else:
         return (
-            f"TEMP-{geography.get_uuid()}-{data_source.ID}-{geography.ID}-{time_resolution}.csv"
+            f"TEMPORAL-{geography.get_uuid()}-{data_source.ID}-{geography.ID}-{time_resolution}.csv"
         )

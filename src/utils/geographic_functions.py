@@ -66,7 +66,14 @@ def agglomerate_data_frame(df, grouping_columns, included_groupings=[]):
     grouping_columns : array
         Columns that must be grouped over. If empty, the grouping will be infered from the column's name ending.
     included_groupings : array
-        Grouping functions to be applied 
+        Grouping functions to be applied. The available are:
+            - MAX: Maximum of the values of all intersecting polygons
+            - MIN: Minimum of the values of all intersecting polygons
+            - SUM: The sum of the values of all intersecting polygons
+            - TOTAL: The sum of the values multiplied by the area of each intersecting polygon
+            - AVERAGE: The sum of the values multiplied by the area of each intersecting polygon divided by the total sum of the intersecting polygons.
+
+
 
     Return
     ------
