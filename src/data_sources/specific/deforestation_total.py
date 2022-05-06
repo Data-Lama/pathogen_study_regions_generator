@@ -3,7 +3,7 @@ from constants import AVERAGE, TOTAL, YEAR
 from data_sources.general.data_from_gee_export import DataFromGeeExport
 
 # Constants
-id = "average_deforestation"
+id = "deforestation_total"
 name = "Deforestation Average"
 file_name = "deforestation_2000_2020.shp"
 data_columns_dictionary = {"deforestat": "deforestation"}
@@ -25,4 +25,5 @@ class DeforestationTotal(DataFromGeeExport):
                          included_groupings=[TOTAL],
                          default_values=0,
                          data_time_resolution=YEAR,
-                         drop_zeros=True)
+                         drop_zeros=True,
+                         complete_source=False)

@@ -2,7 +2,8 @@
 import abc
 from abc import ABC, abstractmethod
 import uuid
-from constants import ID
+from constants import GEOMETRY, ID
+from utils.geographic_functions import get_enclosing_geoemtry
 
 
 class AbstractGeography(ABC):
@@ -67,3 +68,10 @@ class AbstractGeography(ABC):
             self.__uuid = uuid.uuid4()
 
         return (self.__uuid)
+
+    def get_enclosing_geometry(self):
+        '''
+        Gets the enclosing geometry as a geopandas
+        '''
+        geometry = self.get_geometry()
+        return (get_enclosing_geoemtry(geometry))

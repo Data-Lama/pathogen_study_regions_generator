@@ -4,10 +4,11 @@ from utils.logger import Logger
 from constants import AREA_COL, GEOMETRY, DATE, AVERAGE, ID, MANIPULATION_PROJECTION, MAX, MIN, SUB_ID, TOTAL, YEAR, isTimeResolutionValid
 import pandas as pd
 import numpy as np
+import geopandas
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
-from utils.geographic_functions import agglomerate_data_frame, overlay_over_geo
+from utils.geographic_functions import agglomerate_data_frame, get_enclosing_geoemtry, overlay_over_geo
 
 
 class DataFromGeoPandas(VectorDataSource, ABC):
@@ -21,7 +22,8 @@ class DataFromGeoPandas(VectorDataSource, ABC):
                  name,
                  data_time_resolution,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
-                 default_values=None):
+                 default_values=None,
+                 complete_source=True):
         '''
         Parameters
         ----------
@@ -35,6 +37,9 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
         default_values : value or dict
             Value or dict indicating the default values for geometries where no value could be extracted. See: utils.geographic_functions.overlay_over_geo for more info
+        complete_source : boolean
+            Determines if the given geopandas fills the entire space (no geographical holes). In case it has holes, they will be filled with 
+            polygons with the default value.
         '''
         super().__init__()
         self.__id = id
@@ -42,6 +47,7 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         self.data_time_resolution = data_time_resolution
         self.included_groupings = included_groupings
         self.default_values = default_values
+        self.complete_source = complete_source
 
     @property
     def ID(self):
@@ -73,6 +79,10 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 
+        # Loads inclosing geometry
+        if not self.complete_source:
+            enclosing_geo = get_enclosing_geoemtry(df_geo)
+
         # Reads the time series shapefile
         Logger.print_progress(f"Loads Data")
         Logger.enter_level()
@@ -91,6 +101,20 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         for date in dates:
             Logger.print_progress(f"{date}")
             df_temp = df_values[df_values[DATE] == date]
+
+            # If incomplete. Adds difference polygon
+            if not self.complete_source:
+                geo_diff = enclosing_geo[GEOMETRY].difference(
+                    df_temp[[GEOMETRY]].dissolve())
+
+                df_temp = pd.concat(
+                    (df_temp,
+                     geopandas.GeoDataFrame(pd.DataFrame({DATE: [date]}),
+                                            geometry=geo_diff)),
+                    ignore_index=True)
+
+                df_temp = df_temp.fillna(self.default_values)
+
             # Overlays over the given geography
             df_ovelayed = overlay_over_geo(
                 df_temp,

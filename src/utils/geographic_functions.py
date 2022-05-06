@@ -51,7 +51,9 @@ def __construct_agglomeration_function(included_groupings=[]):
     return (extract_values)
 
 
-def agglomerate_data_frame(df, grouping_columns, included_groupings=[]):
+def agglomerate_data_frame(df: pd.DataFrame,
+                           grouping_columns: list,
+                           included_groupings=[]):
     '''
     Method that agglomerates a given dataframe by their grouping columns.
     It uses the included groupings to infer the agglomerations. If this parameter
@@ -123,12 +125,13 @@ def agglomerate_data_frame(df, grouping_columns, included_groupings=[]):
             fun_dic[col] = gr
 
     # Aggregates
+
     df_agg = df.groupby(grouping_columns).agg(fun_dic).reset_index()
 
     # Corrects AVERAGE columns
     for col in value_cols:
         if get_grouping(col) == AVERAGE:
-            df[col] = df[col] / df[AREA_COL]
+            df_agg[col] = df_agg[col] / df_agg[AREA_COL]
 
     # Drops Area column
     df_agg.drop(AREA_COL, axis=1, inplace=True)
@@ -136,8 +139,8 @@ def agglomerate_data_frame(df, grouping_columns, included_groupings=[]):
     return (df_agg)
 
 
-def overlay_over_geo(df_values,
-                     df_geo,
+def overlay_over_geo(df_values: geopandas.GeoDataFrame,
+                     df_geo: geopandas.GeoDataFrame,
                      grouping_columns=[ID, DATE],
                      included_groupings=[SUM, TOTAL, AVERAGE, MAX, MIN],
                      default_values=np.nan):
@@ -198,3 +201,11 @@ def overlay_over_geo(df_values,
         df_overlayed = df_overlayed.fillna(default_values)
 
     return (df_overlayed)
+
+
+def get_enclosing_geoemtry(df_geo):
+    '''
+    Gets the enclosing geometry as a geopandas from the given
+    geopandas
+    '''
+    return (df_geo[[GEOMETRY]].dissolve())

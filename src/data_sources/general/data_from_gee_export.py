@@ -25,14 +25,16 @@ class DataFromGeeExport(DataFromGeoPandas):
                  included_groupings,
                  default_values,
                  data_time_resolution=WEEK,
-                 drop_zeros=False):
+                 drop_zeros=False,
+                 complete_source=True):
         '''
         '''
         super().__init__(id=id,
                          name=name,
                          data_time_resolution=data_time_resolution,
                          included_groupings=included_groupings,
-                         default_values=default_values)
+                         default_values=default_values,
+                         complete_source=complete_source)
 
         self.folder_name = folder_name
         self.data_columns = list(data_columns_dictionary.keys())
