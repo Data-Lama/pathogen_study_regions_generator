@@ -10,6 +10,7 @@ class AggregationEmbedder(AbstractEmbbeder):
         super().__init__()
 
         self.aggregation_function = aggregation_function
+        self.aggr_id = None
 
     def aggregation_function(self):
         return (self.aggregation_function)
@@ -20,6 +21,10 @@ class AggregationEmbedder(AbstractEmbbeder):
     ID = "aggregation_embedder"
     name = "Aggregation Embedder"
 
+    def set_agregation_id(self, aggr_id):
+        self.aggr_id = aggr_id
+
+
     def embeddData(self, current_geography, df_vector=None, df_matrix=None):
         '''
         Aggregate based on provided function. Default behavior is sum
@@ -27,5 +32,5 @@ class AggregationEmbedder(AbstractEmbbeder):
 
         df_vector = df_vector.groupby(con.ID).apply(
             self.aggregation_function).reset_index()
-
+        
         return (df_vector, df_matrix)
