@@ -51,6 +51,7 @@ class FBMobilityFromFolder(MatrixDataSource):
             'end_movement_lon', 'end_movement_lat', 'n_crisis'
         ]]
 
+        
         # First Start
         df_movement = geopandas.sjoin(geopandas.GeoDataFrame(
             df_movement,
@@ -58,10 +59,13 @@ class FBMobilityFromFolder(MatrixDataSource):
                                               df_movement.start_movement_lat),
             crs=USUAL_PROJECTION),
                                       df_geo[[ID, GEOMETRY]],
-                                      how='inner',
+                                      how='right',
                                       predicate='within').rename(columns={
                                           ID: ID_1
-                                      }).drop(['index_right'], axis=1)
+                                      }).drop(['index_left'], axis=1)
+
+        df_movement["n_crisis"] =  df_movement["n_crisis"].fillna(0)
+
         # Then End
         df_movement = geopandas.sjoin(
             geopandas.GeoDataFrame(df_movement,
@@ -70,8 +74,10 @@ class FBMobilityFromFolder(MatrixDataSource):
                                        df_movement.end_movement_lat),
                                    crs=USUAL_PROJECTION),
             df_geo[[ID, GEOMETRY]],
-            how='inner',
+            how='right',
             predicate='within').rename(columns={ID: ID_2})
+
+        df_movement["n_crisis"] =  df_movement["n_crisis"].fillna(0)
 
         # Filters and renames
         df_movement = df_movement[['date_time', ID_1, ID_2,
@@ -85,6 +91,10 @@ class FBMobilityFromFolder(MatrixDataSource):
             (df_movement[ID_1].isin(df_geo[ID].unique()))
             & (df_movement[ID_2].isin(df_geo[ID].unique()))].copy()
 
+        # Filters out rows without time or ids
+        df_movement.dropna(subset=[ID_1, ID_2, DATE], inplace=True)
+
+
         # Rounds and Groups by
         df_movement[DATE] = pd.to_datetime(df_movement[DATE])
         df_movement[DATE] = df_movement[DATE].dt.round(freq='D')
@@ -93,6 +103,21 @@ class FBMobilityFromFolder(MatrixDataSource):
             get_period_representative_function(time_resolution))
         df_movement = df_movement.groupby([DATE, ID_1,
                                            ID_2]).sum().reset_index()
+
+
+        # Extracts ids that are missing from movement matrix to fill in with 0.
+        df_geo["cross_join_key"] = 0
+        df_cross_join = df_geo[["ID", "cross_join_key"]].merge(df_geo[["ID", "cross_join_key"]], on="cross_join_key", how='outer')
+        df_cross_join.rename(columns={"ID_x": ID_1, "ID_y": ID_2}, inplace=True)
+
+        for d in df_movement[DATE].unique():
+            df_cross_join[DATE] = d
+            df_movement = df_movement.merge(df_cross_join, on=[ID_1, ID_2, DATE], how="outer").drop(columns=["cross_join_key"])
+            
+            df_movement.dropna(subset=[ID_1, ID_2, DATE], inplace=True)
+
+        df_movement[MOVEMENT] = df_movement[MOVEMENT].fillna(0)
+
 
         return df_movement
 

@@ -7,7 +7,7 @@ from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1,
 from data_sources.abstract.matrix_data_source import MatrixDataSource
 from data_sources.general.data_from_fb_mobility import FBMobilityFromFolder
 from utils.date_functions import get_period_representative_function
-from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES, build_movement
+from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES_ALL, build_movement
 import os
 import geopandas
 import pandas as pd
@@ -27,4 +27,4 @@ class FBMobility(FBMobilityFromFolder):
                          name=NAME,
                          folder=os.path.join(PIPELINE_DATA_FOLDER, RAW,
                                              FB_MOVEMENT,
-                                             MOVEMENT_BETWEEN_TILES))
+                                             MOVEMENT_BETWEEN_TILES_ALL))
