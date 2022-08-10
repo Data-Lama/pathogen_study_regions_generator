@@ -13,11 +13,11 @@ import geopandas
 import pandas as pd
 
 # Constants
-SOURCE_ID = "fb_mobility"
-NAME = "Facebook Mobility"
+SOURCE_ID = "fb_mobility_bogota"
+NAME = "Facebook Mobility Bogota"
 
 
-class FBMobility(FBMobilityFromFolder):
+class FBMobilityBogota(FBMobilityFromFolder):
     '''
     Matrix Data Source
     '''
@@ -25,6 +25,6 @@ class FBMobility(FBMobilityFromFolder):
     def __init__(self):
         super().__init__(id=SOURCE_ID,
                          name=NAME,
-                         folder=os.path.join(PIPELINE_DATA_FOLDER, RAW,
-                                             FB_MOVEMENT,
-                                             MOVEMENT_BETWEEN_TILES))
+                         folder=os.path.join(
+                             PIPELINE_DATA_FOLDER, RAW, FB_MOVEMENT,
+                             "movement_between_tiles_bogota_recent"))
