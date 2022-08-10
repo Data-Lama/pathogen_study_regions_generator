@@ -15,11 +15,12 @@ class IBD(MatrixDataSource):
 
     def __init__(self):
         super().__init__()
-        self.distance = 'min'
+    
+    distance = 'min'
 
     @property
     def ID(self):
-        return "ibd"
+        return f"ibd-{self.distance}"
 
     @property
     def name(self):
@@ -27,14 +28,13 @@ class IBD(MatrixDataSource):
 
     def set_distance(self, distance):
         '''
-        Sets the function to calculate the distance between sets:
-            options are: min, max, mean, hausdorff
-            defaults to min
+        Distance to collapse IBD matrix. One of:
+            - min
+            - max
+            - mean
+            - hausdorff
         '''
         self.distance = distance
-
-
-
 
     # Override
     def createData(self, df_geo, time_resolution):
