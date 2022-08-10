@@ -19,7 +19,11 @@ def get_dates_between_years_by_resolution(min_year, max_year, time_resolution):
     start_date = None
     advance_fun = None
     end_date = pd.to_datetime(f"{max_year}-12-31")
-    if time_resolution == WEEK:
+    if time_resolution == DAY:
+        start_date = pd.to_datetime(f"{min_year}-01-01")
+        advance_fun = lambda s: s + timedelta(days=1)
+    
+    elif time_resolution == WEEK:
         start_date = pd.to_datetime(f"{min_year}-01-01")
         # Sets to sunday
         start_date += timedelta(days=6 - start_date.weekday())
@@ -101,7 +105,11 @@ def get_period_representative_function(time_resolution):
     Method that returns the function that receives a date and takes it to its representative, given the time resolution
     '''
 
-    if time_resolution == WEEK:
+    if time_resolution == DAY:
+        #Identity
+        return(lambda d : d)
+
+    elif time_resolution == WEEK:
         # Sets to sunday
         return (lambda d: d + timedelta(days=6 - d.weekday()))
 
