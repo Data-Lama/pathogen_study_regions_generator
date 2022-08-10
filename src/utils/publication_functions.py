@@ -7,7 +7,7 @@ column_name_dic[
     'precipitation_total_precipitation_average'] = "Total Precipitation"
 column_name_dic['temperature_mean_temperature_average'] = "Average Temperature"
 column_name_dic[
-    'average_deforestation_deforestation_average'] = "Average Deforestation"
+    'deforestation_average_deforestation_average'] = "Average Deforestation"
 column_name_dic[
     'precipitation_average_precipitation_average'] = "Average Precipitation"
 
