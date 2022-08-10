@@ -52,10 +52,13 @@ def extract_lon(poly, pos=1):
     '''
 	Extracts the longitud from the polygon string
 	'''
-    poly = poly[12:-1]
-    poly = poly.replace(', ', ',')
-    poly = poly.split(',')[pos - 1]
-    resp = poly.split(' ')[0]
+    try:
+        poly = poly[12:-1]
+        poly = poly.replace(', ', ',')
+        poly = poly.split(',')[pos - 1]
+        resp = poly.split(' ')[0]
+    except IndexError:
+        return None
 
     return (float(resp))
 
@@ -64,10 +67,13 @@ def extract_lat(poly, pos=1):
     '''
 	Extracts the latitude from the polygon string
 	'''
-    poly = poly[12:-1]
-    poly = poly.replace(', ', ',')
-    poly = poly.split(',')[pos - 1]
-    resp = poly.split(' ')[1]
+    try:
+        poly = poly[12:-1]
+        poly = poly.replace(', ', ',')
+        poly = poly.split(',')[pos - 1]
+        resp = poly.split(' ')[1]
+    except IndexError:
+        return None
 
     return (float(resp))
 

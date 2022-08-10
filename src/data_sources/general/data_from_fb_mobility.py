@@ -42,7 +42,7 @@ class FBMobilityFromFolder(MatrixDataSource):
         # Directory
         directory = self.folder
 
-        df_movement = build_movement(directory)
+        df_movement = build_movement(directory).dropna()
 
         # Agglomerates the movement
         # Creates the agglomerated movement

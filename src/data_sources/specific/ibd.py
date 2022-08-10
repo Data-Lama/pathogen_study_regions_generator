@@ -5,6 +5,7 @@ import geopandas as gpd
 from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, SUB_ID, USUAL_PROJECTION, isTimeResolutionValid
 from data_sources.abstract.matrix_data_source import MatrixDataSource
 from utils.date_functions import get_period_representative_function
+from utils import distance_functions
 
 
 class IBD(MatrixDataSource):
@@ -14,6 +15,7 @@ class IBD(MatrixDataSource):
 
     def __init__(self):
         super().__init__()
+        self.distance = 'min'
 
     @property
     def ID(self):
@@ -23,8 +25,14 @@ class IBD(MatrixDataSource):
     def name(self):
         return "Identity by descent"
 
-    def set_ibd_threshold(self, ibd_threshold):
-        self.ibd_threshold = ibd_threshold
+    def set_distance(self, distance):
+        '''
+        Sets the function to calculate the distance between sets:
+            options are: min, max, mean, hausdorff
+            defaults to min
+        '''
+        self.distance = distance
+
 
 
 
@@ -58,8 +66,11 @@ class IBD(MatrixDataSource):
             (df[ID_1].isin(df_geo[ID].unique()))
             & (df[ID_2].isin(df_geo[ID].unique()))].copy()
 
-        # Group by date id1, id2, and date to get min
-        df = df.groupby([DATE, ID_1, ID_2]).min().reset_index()
+        # Group by date id1, id2, and date to apply desired distance function
+        if self.distance == 'hausdorff':
+            df = df.groupby(DATE).apply(distance_functions.hausdorff).reset_index().drop(columns=["level_1"])
+        else:
+            df = df.groupby([DATE, ID_1, ID_2]).apply(self.distance).reset_index()
 
         
         return df
