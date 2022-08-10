@@ -15,15 +15,13 @@ class IBD(MatrixDataSource):
     def __init__(self):
         super().__init__()
 
-        self.ibd_threshold = 0.9
-
     @property
     def ID(self):
-        return SOURCE_ID
+        return "ibd"
 
     @property
     def name(self):
-        return NAME
+        return "Identity by descent"
 
     def set_ibd_threshold(self, ibd_threshold):
         self.ibd_threshold = ibd_threshold
@@ -53,30 +51,17 @@ class IBD(MatrixDataSource):
         # Drop rows where time resolution doesn't match
         df = df[df["date_1"] == df["date_2"]]
         df.drop(columns=["date_2"], inplace=True)
-        df.rename(columns={"date_1": "date"}, inplace=True)
+        df.rename(columns={"date_1": DATE}, inplace=True)
+
+        # Filters out geo_id not in polyong
+        df = df[
+            (df[ID_1].isin(df_geo[ID].unique()))
+            & (df[ID_2].isin(df_geo[ID].unique()))].copy()
 
         # Group by date id1, id2, and date to get min
-        df = df.groupby(["date", "ID_1", "ID_2"]).min().reset_index()
+        df = df.groupby([DATE, ID_1, ID_2]).min().reset_index()
 
-        # Adds geometry
-        # # First ID_1
-        # gdf_ibd_1 = gpd.GeoDataFrame(gdf_muni.merge(df, left_on="muni_id", right_on=ID_1).dropna().drop(columns=["muni_id"]), 
-        #         geometry='geometry', crs=USUAL_PROJECTION)
-        # gdf_ibd_1 = gpd.sjoin(gdf_ibd_1, df_geo[[ID, GEOMETRY]], how='left', predicate='contains')
-
-        # # Then ID_2
-        # gdf_ibd_2 = gpd.GeoDataFrame(gdf_muni.merge(df, left_on="muni_id", right_on=ID_2).dropna().drop(columns=["muni_id"]), 
-        #         geometry='geometry', crs=USUAL_PROJECTION).dropna()                
-        # gdf_ibd_2 = gpd.sjoin(gdf_ibd_2, df_geo[[ID, GEOMETRY]], how='left', predicate='contains').drop(['index_right', ID], axis=1)
-
-        # # Merge gdf and merge geometries by union. Resulting geometry is the union of the corresponding polygons
-        # gdf_ibd = gdf_ibd_1[["geometry", "date", "ID_1", "ID_2"]].merge(gdf_ibd_2, on=["date", "ID_1", "ID_2"])        
-
-        # # Transform geomtry into a grouping
-        # gdf_ibd["geometry"] = gdf_ibd.apply(lambda x: gpd.GeoSeries([x["geometry_x"], x["geometry_y"]]).unary_union, axis=1)
-        # gdf_ibd.drop(columns=["geometry_x", "geometry_y"], inplace=True)
         
-        # gdf_ibd = gpd.GeoDataFrame(gdf_ibd, geometry='geometry')
         return df
 
     def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
