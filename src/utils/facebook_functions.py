@@ -7,7 +7,8 @@ from constants import PIPELINE_DATA_FOLDER, RAW
 
 # Data location constans
 FB_MOVEMENT = "fb_mobility"
-MOVEMENT_BETWEEN_TILES = 'movement_between_tiles_recent'
+MOVEMENT_BETWEEN_TILES_RECENT = 'movement_between_tiles_recent'
+MOVEMENT_BETWEEN_TILES_ALL = 'movement_between_tiles_all'
 
 
 def build_movement(directory):
