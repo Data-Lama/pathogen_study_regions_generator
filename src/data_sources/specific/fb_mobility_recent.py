@@ -13,11 +13,11 @@ import geopandas
 import pandas as pd
 
 # Constants
-SOURCE_ID = "fb_mobility"
-NAME = "Facebook Mobility"
+SOURCE_ID = "fb_mobility_recent"
+NAME = "Facebook Mobility Recent"
 
 
-class FBMobility(FBMobilityFromFolder):
+class FBMobilityRecent(FBMobilityFromFolder):
     '''
     Matrix Data Source
     '''
