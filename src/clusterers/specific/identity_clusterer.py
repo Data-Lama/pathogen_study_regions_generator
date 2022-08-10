@@ -23,11 +23,10 @@ class IdentityClusterer(AbstractClusterer):
             }))
 
         if df_matrix is not None:
-            ids = np.unique(
-                np.concatenate(df_vector[con.ID_1].unique(),
-                               df_vector[con.ID_2].unique()))
+            ids = set(df_matrix[con.ID_1].unique())
+
             return (pd.DataFrame({
-                con.ID: ids,
+                con.ID: list(ids),
                 con.CLUSTER_ID: range(len(ids))
             }))
 
