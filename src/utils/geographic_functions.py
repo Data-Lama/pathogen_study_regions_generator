@@ -87,9 +87,10 @@ def agglomerate_data_frame(df: pd.DataFrame,
     value_cols = df.columns.difference(
         [DATE, GEOMETRY, ID, ID_1, ID_2, SUB_ID, AREA_COL])
 
+    
     # Creates the columns for aggregations
-    for gr in included_groupings:
-        for col in value_cols:
+    for col in value_cols: 
+        for gr in included_groupings:                   
             df[make_grouping_name(col, gr)] = df[col]
 
         # Drops original column
