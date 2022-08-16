@@ -1,5 +1,6 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
+from asyncio.log import logger
 from constants import GEOMETRY, PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
 
 import os
@@ -36,7 +37,8 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
                  min_time_resolution=DAY,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
                  columns_of_interest=[],
-                 default_values=np.nan):
+                 default_values=np.nan,
+                 filter=None):
         '''
         Assings the included groupings for the overlay stage
         '''
@@ -57,6 +59,7 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
         self.columns_of_interest = columns_of_interest
         self.suplementary_geography = suplementary_geography
         self.default_values = default_values
+        self.filter = filter
 
     def set_encoding_dict(self, encoding_dict):
         self.encoding_dict = encoding_dict
@@ -92,6 +95,15 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
 
         df = pd.read_csv(file_location, parse_dates=["date"])
 
+        # Apply filter function if necesary
+        if self.filter:
+            for key in self.filter.keys():
+                values = self.filter[key]
+                if not key in df.columns:
+                    logger.error(f"Column {key} for filter, doesn't exist.")
+                else:
+                    df = df[df[key].isin(values)]
+                    
         # Take to min allowed resolution
         df["min_time_resolution"] = df.apply(
             lambda x: take_to_period_representative(x["date"], self.
