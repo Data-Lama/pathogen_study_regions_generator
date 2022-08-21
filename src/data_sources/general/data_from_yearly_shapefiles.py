@@ -1,7 +1,7 @@
 # Data source from yearly shapefiles
 import os
 
-from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, YEAR
+from constants import IDENT, DATE, LINEAR, MEAN, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, YEAR
 
 import geopandas
 import pandas as pd
@@ -16,7 +16,8 @@ class DataFromYearlyShapefiles(DataFromGeoPandas):
     '''
 
     def __init__(self, id, name, folder_name, file_format, data_columns,
-                 min_year, max_year, included_groupings, default_values):
+                 min_year, max_year, included_groupings, default_values,
+                 time_resolution_aggregation_function=MEAN, time_resolution_extrapolation_function= LINEAR):
         '''
         Parameters
         ----------
@@ -40,12 +41,19 @@ class DataFromYearlyShapefiles(DataFromGeoPandas):
             Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
         default_values : value or dict
             Value or dict indicating the default values for geometries where no value could be extracted. See: utils.geographic_functions.overlay_over_geo for more info
+        time_resolution_aggregation_function : str
+            How to lower the time resolution of the data source. See utils.date_functions.lower_time_resolution for more info.
+        time_resolution_extrapolation_function : str
+            How to increase the time resolution of the data source. See utils.date_functions.increase_time_resolution for more info.
+        
         '''
         super().__init__(id=id,
                          name=name,
                          data_time_resolution=YEAR,
                          included_groupings=included_groupings,
-                         default_values=default_values)
+                         default_values=default_values,
+                         time_resolution_aggregation_function = time_resolution_aggregation_function,
+                         time_resolution_extrapolation_function = time_resolution_extrapolation_function)
 
         self.folder_name = folder_name
         self.data_columns = data_columns

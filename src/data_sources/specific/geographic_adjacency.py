@@ -4,7 +4,7 @@
 from re import A
 from constants import BUFFER_PROJECTION, DATE, ID_2, GEOMETRY, ID, MANIPULATION_PROJECTION, PIPELINE_DATA_FOLDER, RAW, ID_1, USUAL_PROJECTION
 from data_sources.abstract.matrix_data_source import MatrixDataSource
-from utils.date_functions import get_period_representative_function, get_today, take_to_period_representative
+from utils.date_functions import get_resolution_representative_function, get_today, take_to_resolution_representative
 from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES, build_movement
 import os
 import geopandas
@@ -62,7 +62,7 @@ class FBMobility(MatrixDataSource):
         df_matrix = df_matrix.merge(df_cross, how='left').fillna(0)
 
         # Adds date
-        df_matrix[DATE] = take_to_period_representative(
+        df_matrix[DATE] = take_to_resolution_representative(
             get_today(), time_resolution)
 
         df_matrix = df_matrix[[DATE, ID_1, ID_2, ADJACENCY]].copy()

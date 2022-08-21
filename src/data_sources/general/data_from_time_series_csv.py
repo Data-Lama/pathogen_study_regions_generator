@@ -1,7 +1,7 @@
 # Data source from a time series of shapefiles
 from abc import ABC, abstractmethod
 from asyncio.log import logger
-from constants import GEOMETRY, PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
+from constants import GEOMETRY, LINEAR, MEAN, PIPELINE_DATA_FOLDER, RAW, SUPPLEMENTARY, IDENT, DATE, AVERAGE, ID, MAX, MIN, TOTAL, isTimeResolutionValid, DAY, WEEK, MONTH, YEAR
 
 import os
 import numpy as np
@@ -10,7 +10,7 @@ import geopandas as gpd
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 from data_sources.general.data_from_geopandas import DataFromGeoPandas
-from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function, take_to_period_representative
+from utils.date_functions import take_to_resolution_representative
 from utils.geographic_functions import overlay_over_geo
 from utils.logger import Logger
 from utils.preprocessing_functions import one_hot_encoding
@@ -38,6 +38,8 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
                  columns_of_interest=[],
                  default_values=np.nan,
+                 time_resolution_aggregation_function=MEAN,
+                 time_resolution_extrapolation_function= LINEAR,
                  filter=None):
         '''
         Assings the included groupings for the overlay stage
@@ -46,6 +48,8 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
                          name=name,
                          data_time_resolution=min_time_resolution,
                          included_groupings=included_groupings,
+                         time_resolution_aggregation_function = time_resolution_aggregation_function,
+                         time_resolution_extrapolation_function = time_resolution_extrapolation_function,
                          default_values=default_values)
 
         self.folder_name = folder_name
@@ -60,6 +64,9 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
         self.suplementary_geography = suplementary_geography
         self.default_values = default_values
         self.filter = filter
+        self.time_resolution_aggregation_function= time_resolution_aggregation_function
+        self.time_resolution_extrapolation_function = time_resolution_extrapolation_function
+
 
     def set_encoding_dict(self, encoding_dict):
         self.encoding_dict = encoding_dict
@@ -95,6 +102,10 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
 
         df = pd.read_csv(file_location, parse_dates=["date"])
 
+        # Filters
+        df = df[df[DATE].dt.year >= self.min_year]
+        df = df[df[DATE].dt.year <= self.max_year].copy()
+
         # Apply filter function if necesary
         if self.filter:
             for key in self.filter.keys():
@@ -106,7 +117,7 @@ class DataFromTimeSeriesOfCSV(DataFromGeoPandas):
                     
         # Take to min allowed resolution
         df["min_time_resolution"] = df.apply(
-            lambda x: take_to_period_representative(x["date"], self.
+            lambda x: take_to_resolution_representative(x["date"], self.
                                                     min_time_resolution),
             axis=1)
         df.drop(columns=["date"], inplace=True)

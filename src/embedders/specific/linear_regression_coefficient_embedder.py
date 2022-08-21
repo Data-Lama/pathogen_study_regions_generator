@@ -22,6 +22,7 @@ class LinearRegressionCoefficientEmbedder(AbstractEmbbeder):
     def embeddData(self, current_geography, df_vector=None, df_matrix=None):
 
         df_vector = df_vector.dropna()
+
         # Extract observed variable columns
         variable_cols = df_vector.columns.difference(
             [ID, DATE, self.target_col])

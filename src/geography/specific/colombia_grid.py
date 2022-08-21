@@ -17,7 +17,7 @@ class ColombianGrid(AbstractGeography):
     available_resolutions = [1000, 10000]
 
     # Default res
-    resolution = 10000
+    resolution = 1000
 
     @property
     def ID(self):

@@ -1,13 +1,13 @@
 # Data source from an official commodity.
 # Uses Yahoo finance API
-from constants import IDENT, DATE, ID, SUB_ID, VALUE, isTimeResolutionValid
+from constants import DAY, IDENT, DATE, ID, LINEAR, MEAN, SUB_ID, VALUE, YEAR, isTimeResolutionValid
 
 from data_sources.abstract.vector_data_source import VectorDataSource
 
 import yfinance as yf
 import pandas as pd
 
-from utils.date_functions import get_period_representative_function
+from utils.date_functions import get_resolution_representative_function, increase_time_resolution, lower_time_resolution
 
 IDENT = IDENT
 
@@ -57,19 +57,18 @@ class OfficialCommodity(VectorDataSource):
         df = df[(df[date_col] >= pd.to_datetime(f"{self.min_year}-01-31")) & (
             df[date_col] <= pd.to_datetime(f"{self.max_year}-12-31"))].copy()
 
-        # Maps the date
-        df[date_col] = df[date_col].apply(
-            get_period_representative_function(time_resolution))
-
-        # Groupsby
-        df = df.groupby(date_col).mean().reset_index()
-
         # Renames
         df = df.rename(columns={date_col: DATE, target_col: VALUE})
 
         # Cross product with geo id
         df = df_geo[[ID]].merge(df, how='cross')
 
+        df = lower_time_resolution(df=df,
+                    initial_time_resolution=DAY,
+                    target_time_resolution=time_resolution,
+                    aggregation_function=MEAN)
+
+        
         return (df)
 
     def createDataFromCachedSubGeography(self, time_resolution, sub_geography,

@@ -33,7 +33,10 @@ MONTH = "MONTH"
 YEAR = "YEAR"
 
 
-def isTimeResolutionValid(tr):
+def isTimeResolutionValid(tr : str):
+    '''
+    Checks if time resolution is valid
+    '''
     if tr not in [DAY, WEEK, MONTH, YEAR]:
         raise ValueError(f'Time resolution: {tr} not supported')
 
@@ -46,6 +49,11 @@ MIN = "min"
 TOTAL = "total"
 SUM = "sum"
 AVERAGE = "average"
+
+# Other grouping variables
+MEAN = 'mean'
+PAD = "pad"
+LINEAR = "linear"
 
 
 # Build grouping name

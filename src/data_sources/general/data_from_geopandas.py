@@ -1,13 +1,13 @@
 # Data source from a geopandas (abstract)
 from abc import ABC, abstractmethod
 from utils.logger import Logger
-from constants import AREA_COL, GEOMETRY, DATE, AVERAGE, ID, MANIPULATION_PROJECTION, MAX, MIN, SUB_ID, TOTAL, YEAR, isTimeResolutionValid
+from constants import AREA_COL, GEOMETRY, DATE, AVERAGE, ID, LINEAR, MANIPULATION_PROJECTION, MAX, MEAN, MIN, SUB_ID, TOTAL, YEAR, isTimeResolutionValid
 import pandas as pd
 import numpy as np
 import geopandas
 
 from data_sources.abstract.vector_data_source import VectorDataSource
-from utils.date_functions import compare_time_resolutions, get_dates_between_years_by_resolution, get_period_representative_function
+from utils.date_functions import compare_time_resolutions, increase_time_resolution, lower_time_resolution
 from utils.geographic_functions import agglomerate_data_frame, get_enclosing_geoemtry, overlay_over_geo
 
 
@@ -22,8 +22,10 @@ class DataFromGeoPandas(VectorDataSource, ABC):
                  name,
                  data_time_resolution,
                  included_groupings=[TOTAL, AVERAGE, MAX, MIN],
+                 time_resolution_aggregation_function=MEAN,
+                 time_resolution_extrapolation_function= LINEAR,
                  default_values=None,
-                 complete_source=True):
+                 fill_missing_space=False):
         '''
         Parameters
         ----------
@@ -35,11 +37,17 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             Resolution in which the data source is in.
         included_groupings : array
             Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
+        time_resolution_aggregation_function : str
+            How to lower the time resolution of the data source. See utils.date_functions.lower_time_resolution for more info.
+        time_resolution_extrapolation_function : str
+            How to increase the time resolution of the data source. See utils.date_functions.increase_time_resolution for more info.
         default_values : value or dict
             Value or dict indicating the default values for geometries where no value could be extracted. See: utils.geographic_functions.overlay_over_geo for more info
         complete_source : boolean
             Determines if the given geopandas fills the entire space (no geographical holes). In case it has holes, they will be filled with 
             polygons with the default value.
+        fill_missing_space : boolean
+            If the missing geographical space should be filled with default values or not
         '''
         super().__init__()
         self.__id = id
@@ -47,7 +55,10 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         self.data_time_resolution = data_time_resolution
         self.included_groupings = included_groupings
         self.default_values = default_values
-        self.complete_source = complete_source
+        self.time_resolution_aggregation_function = time_resolution_aggregation_function
+        self.time_resolution_extrapolation_function = time_resolution_extrapolation_function
+        self.fill_missing_space = fill_missing_space
+
 
     @property
     def ID(self):
@@ -80,7 +91,7 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         isTimeResolutionValid(time_resolution)
 
         # Loads inclosing geometry
-        if not self.complete_source:
+        if self.fill_missing_space:
             enclosing_geo = get_enclosing_geoemtry(df_geo)
 
         # Reads the time series shapefile
@@ -103,7 +114,7 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             df_temp = df_values[df_values[DATE] == date]
 
             # If incomplete. Adds difference polygon
-            if not self.complete_source:
+            if self.fill_missing_space:
                 geo_diff = enclosing_geo[GEOMETRY].difference(
                     df_temp[[GEOMETRY]].dissolve())
 
@@ -135,35 +146,22 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         comp = compare_time_resolutions(self.data_time_resolution,
                                         time_resolution)
 
-        if comp < 0:
-            # Data resolution is lower
+        if comp > 0:
+            # Target resolution is lower
 
-            # Takes the dates to their corresponding period
-            df[DATE] = df[DATE].apply(
-                get_period_representative_function(time_resolution))
+            df = lower_time_resolution(df=df, 
+                                       initial_time_resolution=self.data_time_resolution,
+                                       target_time_resolution=time_resolution,
+                                       aggregation_function=self.time_resolution_aggregation_function)
 
-            df = df.groupby([ID, DATE]).mean().reset_index()
+        elif comp < 0:
+            # Target resolution is higher
+            df = increase_time_resolution(df = df,
+                                        initial_time_resolution = self.data_time_resolution,
+                                        target_time_resolution = time_resolution,
+                                        extrapolation_function = self.time_resolution_extrapolation_function)
 
-        elif comp > 0:
-            # Data resolution is higher
-            all_dates = get_dates_between_years_by_resolution(
-                min_year=df[DATE].min().year,
-                max_year=df[DATE].max().year,
-                time_resolution=time_resolution)
-
-            # Creates merging column
-            df_all_dates = pd.DataFrame({"__final_date": all_dates})
-            df_all_dates[DATE] = df_all_dates["__final_date"].apply(
-                get_period_representative_function(self.data_time_resolution))
-
-            # Merges
-            df = df.merge(df_all_dates)
-            df.drop(DATE, axis=1, inplace=True)
-            df.rename(columns={"__final_date": DATE}, inplace=True)
-
-        # Orders columns
-        return (df[[ID, DATE] +
-                   df.columns.difference([ID, DATE]).values.tolist()].copy())
+        return df
 
     def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
                                          df_map):

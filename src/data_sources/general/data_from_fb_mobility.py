@@ -5,7 +5,7 @@
 from re import A
 from constants import DATE, ID_2, GEOMETRY, ID, ID_1, SUB_ID, USUAL_PROJECTION, isTimeResolutionValid
 from data_sources.abstract.matrix_data_source import MatrixDataSource
-from utils.date_functions import get_period_representative_function
+from utils.date_functions import get_resolution_representative_function
 from utils.facebook_functions import build_movement
 import geopandas
 import pandas as pd
@@ -100,7 +100,7 @@ class FBMobilityFromFolder(MatrixDataSource):
         df_movement[DATE] = df_movement[DATE].dt.round(freq='D')
         # Takes to end of period
         df_movement[DATE] = df_movement[DATE].apply(
-            get_period_representative_function(time_resolution))
+            get_resolution_representative_function(time_resolution))
         df_movement = df_movement.groupby([DATE, ID_1,
                                            ID_2]).sum().reset_index()
 

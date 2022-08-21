@@ -4,7 +4,7 @@ import geopandas as gpd
 
 from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, SUB_ID, USUAL_PROJECTION, isTimeResolutionValid
 from data_sources.abstract.matrix_data_source import MatrixDataSource
-from utils.date_functions import get_period_representative_function
+from utils.date_functions import get_resolution_representative_function
 from utils import distance_functions
 
 
@@ -51,10 +51,10 @@ class IBD(MatrixDataSource):
 
         # Takes to end of period
         df["date_1"] = df["date_1"].apply(
-            get_period_representative_function(time_resolution))
+            get_resolution_representative_function(time_resolution))
 
         df["date_2"] = df["date_2"].apply(
-            get_period_representative_function(time_resolution))
+            get_resolution_representative_function(time_resolution))
 
         # Drop rows where time resolution doesn't match
         df = df[df["date_1"] == df["date_2"]]

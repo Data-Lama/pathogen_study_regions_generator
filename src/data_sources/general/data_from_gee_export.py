@@ -1,7 +1,7 @@
 # Data source from  gee exports
 import os
 
-from constants import IDENT, DATE, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, WEEK
+from constants import IDENT, DATE, LINEAR, MEAN, PIPELINE_DATA_FOLDER, RAW, USUAL_PROJECTION, WEEK
 
 import geopandas
 import pandas as pd
@@ -26,7 +26,9 @@ class DataFromGeeExport(DataFromGeoPandas):
                  default_values,
                  data_time_resolution=WEEK,
                  drop_zeros=False,
-                 complete_source=True):
+                 time_resolution_aggregation_function=MEAN,
+                 time_resolution_extrapolation_function= LINEAR,
+                 fill_missing_space=False):
         '''
         '''
         super().__init__(id=id,
@@ -34,7 +36,9 @@ class DataFromGeeExport(DataFromGeoPandas):
                          data_time_resolution=data_time_resolution,
                          included_groupings=included_groupings,
                          default_values=default_values,
-                         complete_source=complete_source)
+                         time_resolution_aggregation_function = time_resolution_aggregation_function,
+                         time_resolution_extrapolation_function = time_resolution_extrapolation_function,
+                         fill_missing_space=fill_missing_space)
 
         self.folder_name = folder_name
         self.data_columns = list(data_columns_dictionary.keys())

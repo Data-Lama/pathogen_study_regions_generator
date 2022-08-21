@@ -5,3 +5,4 @@ yfinance==0.1.70
 matplotlib==3.5.1
 scikit-learn==1.0.2
 networkx==2.7.1
+contextily==1.2.0

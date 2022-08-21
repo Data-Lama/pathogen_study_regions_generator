@@ -24,6 +24,7 @@ class MobilityToSimilarityEmbeder(AbstractEmbbeder):
 
     def embeddData(self, current_geography, df_vector=None, df_matrix=None):
 
+        
         # Computes the average mobility
         df_mobility = df_matrix[[ID_1, ID_2, self.mobility_col
                                  ]].groupby([ID_1, ID_2]).mean().reset_index()

@@ -87,22 +87,21 @@ def agglomerate_data_frame(df: pd.DataFrame,
     value_cols = df.columns.difference(
         [DATE, GEOMETRY, ID, ID_1, ID_2, SUB_ID, AREA_COL])
 
-    
     # Creates the columns for aggregations
     for col in value_cols: 
         for gr in included_groupings:                   
             df[make_grouping_name(col, gr)] = df[col]
 
-        # Drops original column
-        df = df.drop(col, axis=1)
+        if len(included_groupings) > 0:
+            # Drops original column (if gropuings where found)
+            df = df.drop(col, axis=1)
 
     # Refreshes value columns
     value_cols = df.columns.difference(
         [DATE, GEOMETRY, ID, ID_1, ID_2, SUB_ID, AREA_COL])
     final_groupings = np.unique([get_grouping(col) for col in value_cols])
 
-    # Checks if area needs to be computed
-
+    # Checks if area needs to be computed    
     if TOTAL in final_groupings or AVERAGE in final_groupings:
         if GEOMETRY not in df.columns and AREA_COL not in df.columns:
             raise ValueError(
@@ -152,7 +151,7 @@ def overlay_over_geo(df_values: geopandas.GeoDataFrame,
     ----------
     df_values : Geopandas.DataFrame
         Geopandas dataframe with the values to overlay. This method assumes that anything other than
-        than the grouping columns and geomtry is a value that must be overlayed.
+        than the grouping columns and geometry is a value that must be overlayed.
     df_geo : Geopandas.DataFrame
         Geopandas dataframe with the geometry to be overlayed. Will only use the columns ID and geometry
     grouping_columns : array
