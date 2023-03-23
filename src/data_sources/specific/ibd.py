@@ -2,10 +2,12 @@ import os
 import pandas as pd
 import geopandas as gpd
 
-from constants import DATE, ID_2, GEOMETRY, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, SUB_ID, USUAL_PROJECTION, isTimeResolutionValid
+from constants import DATE, ID_2, ID, PIPELINE_DATA_FOLDER, RAW, ID_1, SUB_ID, isTimeResolutionValid
 from data_sources.abstract.matrix_data_source import MatrixDataSource
 from utils.date_functions import get_resolution_representative_function
 from utils import distance_functions
+
+from geography.abstract.abstact_geography import Geography
 
 
 class IBD(MatrixDataSource):
@@ -37,7 +39,10 @@ class IBD(MatrixDataSource):
         self.distance = distance
 
     # Override
-    def createData(self, df_geo, time_resolution):
+    def createData(self, geography: Geography, time_resolution: str) -> pd.DataFrame:
+
+        # Extracts geopandas
+        df_geo = geography.get_geometry()
 
         # Checks time resolution
         isTimeResolutionValid(time_resolution)

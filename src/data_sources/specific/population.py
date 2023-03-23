@@ -21,9 +21,10 @@ class Population(DataFromTimeSeriesOfCSV):
                          file_name="population.csv",
                          min_year=1985,
                          max_year=2035,
-                         suplementary_geography=ColombianMunicipalities(),
+                         reference_geography=ColombianMunicipalities(),
                          min_time_resolution=YEAR,
                          index_id="muni_id",
                          included_groupings=[SUM],
+                         time_resolution_aggregation_function = SUM,
                          columns_of_interest=["urban","rural","total"],
                          default_values=0)

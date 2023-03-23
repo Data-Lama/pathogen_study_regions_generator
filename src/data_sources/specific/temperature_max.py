@@ -23,4 +23,5 @@ class TemperatureMax(DataFromGeeExport):
                          min_year=2000,
                          max_year=2020,
                          included_groupings=[MAX],
+                         time_resolution_aggregation_function = MAX,
                          default_values=None)

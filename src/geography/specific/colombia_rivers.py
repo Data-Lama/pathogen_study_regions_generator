@@ -1,12 +1,12 @@
 # Colombian Rivers
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas as gpd
 import os
 import constants as con
 
 
-class ColombianRivers(AbstractGeography):
+class ColombianRivers(Geography):
     '''
     Geography for the rivers of Colombia
     

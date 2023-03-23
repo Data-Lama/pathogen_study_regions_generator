@@ -6,7 +6,7 @@ from constants import GEOMETRY, ID
 from utils.geographic_functions import get_enclosing_geoemtry
 
 
-class AbstractGeography(ABC):
+class Geography(ABC):
 
     # Local Geometry (read only)
     __geometry = None
@@ -15,7 +15,7 @@ class AbstractGeography(ABC):
     __uuid = None
 
     # Stable Variable
-    # Determines if the geoemtry is stable across time or depends upon excecution
+    # Determines if the geometry is stable across time or depends upon excecution
     is_stable = False
 
     # Sub Geography (From previuos flow excecutions for example)
@@ -28,14 +28,14 @@ class AbstractGeography(ABC):
     @abc.abstractproperty
     def ID(self):
         '''
-        Unique identifier for the flow
+        Unique identifier for the geography
         '''
         pass
 
     @abc.abstractproperty
     def name(self):
         '''
-        Human readable name for the flow
+        Human readable name for the geography
         '''
         pass
 

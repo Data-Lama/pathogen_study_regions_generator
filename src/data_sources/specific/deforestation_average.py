@@ -1,5 +1,5 @@
 # Average deforestation data source
-from constants import AVERAGE, YEAR
+from constants import AVERAGE, YEAR, MEAN
 from data_sources.general.data_from_gee_export import DataFromGeeExport
 
 # Constants
@@ -23,6 +23,7 @@ class DeforestationAverage(DataFromGeeExport):
                          min_year=2001,
                          max_year=2020,
                          included_groupings=[AVERAGE],
+                         time_resolution_aggregation_function = MEAN,
                          default_values=0,
                          data_time_resolution=YEAR,
                          drop_zeros=True,

@@ -1,13 +1,13 @@
 # Colombian indigenous communities
 import this
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas as gpd
 import os
 import constants as con
 
 
-class ColombianIndgCom(AbstractGeography):
+class ColombianIndgCom(Geography):
     '''
     Geography for the indigenous communities of Colombia
     

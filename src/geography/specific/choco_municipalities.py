@@ -1,13 +1,13 @@
 # Choco Municipalities
 from constants import GEO_DATA_FOLDER, ID
 from utils.logger import Logger
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas
 import os
 import constants as con
 
 
-class ChocoMunicipalities(AbstractGeography):
+class ChocoMunicipalities(Geography):
     '''
     Geography for the municipalities of Choco
     

@@ -7,7 +7,10 @@ from data_sources.abstract.vector_data_source import VectorDataSource
 import yfinance as yf
 import pandas as pd
 
-from utils.date_functions import get_resolution_representative_function, increase_time_resolution, lower_time_resolution
+from utils.date_functions import lower_time_resolution
+
+from geography.abstract.abstact_geography import Geography
+
 
 IDENT = IDENT
 
@@ -42,8 +45,11 @@ class OfficialCommodity(VectorDataSource):
         return self.__name
 
     # Override
-    def createData(self, df_geo, time_resolution, **kwargs):
+    def createData(self, geography: Geography, time_resolution: str) -> pd.DataFrame:
 
+        # Extracts geopandas
+        df_geo = geography.get_geometry()
+        
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 

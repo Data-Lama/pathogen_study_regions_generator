@@ -21,9 +21,10 @@ class GoldExport(DataFromTimeSeriesOfCSV):
                          file_name="gold_exports.csv",
                          min_year=2012,
                          max_year=2020,
-                         suplementary_geography=ColombianMunicipalities(),
+                         reference_geography=ColombianMunicipalities(),
                          min_time_resolution=MONTH,
                          index_id="muni_id",
                          included_groupings=[SUM],
+                         time_resolution_aggregation_function = SUM,
                          columns_of_interest=["grams"],
                          default_values={"grams": 0})

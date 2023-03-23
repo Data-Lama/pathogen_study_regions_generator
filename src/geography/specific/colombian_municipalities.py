@@ -1,12 +1,12 @@
 # Colombian Municipalities
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas
 import os
 import constants as con
 
 
-class ColombianMunicipalities(AbstractGeography):
+class ColombianMunicipalities(Geography):
     '''
     Geography for the municipalities of Colombia
     

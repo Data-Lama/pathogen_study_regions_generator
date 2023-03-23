@@ -7,24 +7,25 @@ import pandas as pd
 from constants import CACHED, DATE, PIPELINE_DATA_FOLDER
 from utils.cache_functions import build_cache_name
 
+from geography.abstract.abstact_geography import Geography
 
 class DataSource(ABC):
 
     @abc.abstractproperty
-    def ID(self):
+    def ID(self) -> str:
         '''
         Unique identifier for the data source
         '''
         pass
 
     @abc.abstractproperty
-    def name(self):
+    def name(self) -> str:
         '''
         Human readable name for the data source
         '''
         pass
 
-    def get_data(self, geography, time_resolution):
+    def get_data(self, geography : Geography, time_resolution : str) -> pd.DataFrame:
         '''
         Method that gets the corresponding data. 
         This method first checks for cached data will return it if found.         
@@ -61,7 +62,7 @@ class DataSource(ABC):
                 sub_geography=geography.sub_geography,
                 df_map=geography.df_map)
         else:
-            df = self.createData(df_geo=geography.get_geometry(),
+            df = self.createData(geography=geography,
                                  time_resolution=time_resolution)
 
         # Saves

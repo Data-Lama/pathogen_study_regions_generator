@@ -5,10 +5,11 @@ import unittest
 from constants import DATE, GEO_DATA_FOLDER, ID, ID_1, ID_2, MONTH, WEEK, YEAR, SUPPLEMENTARY_ARGS
 import geopandas
 import os
-from data_sources.specific.fb_mobility import FBMobility
 from data_sources.specific.gold_stock_price import GoldStockPrice
 from data_sources.specific.malaria_cases import Malaria
 from utils.logger import Logger
+
+from geography.specific.colombian_municipalities import ColombianMunicipalities
 
 from data_sources.specific.coca import Coca
 
@@ -17,10 +18,8 @@ shapefile_location = os.path.join(GEO_DATA_FOLDER,
                                   'municipalities/municipalities.shp')
 
 # Loads municipalities of Colombia
-df_geo = geopandas.read_file(shapefile_location)
-df_geo = df_geo.rename(columns={'muni_id': ID})
-
-df_geo_ids = set(df_geo[ID])
+muni = ColombianMunicipalities()
+df_geo_ids = set(muni.get_geometry()[ID])
 
 # Vector Data Sources
 vector_data_sources = [Malaria]
@@ -46,7 +45,7 @@ class TestDataSources(unittest.TestCase):
                 Logger.print_progress(periodocity)
                 Logger.enter_level()
 
-                df = ds.createData(df_geo=df_geo, time_resolution=periodocity)
+                df = ds.createData(geography=muni, time_resolution=periodocity)
 
                 # Checks Id Column
                 self.assertTrue(ID in df.columns)
@@ -75,7 +74,7 @@ class TestDataSources(unittest.TestCase):
                 Logger.print_progress(periodocity)
                 Logger.enter_level()
 
-                df = ds.createData(df_geo=df_geo, time_resolution=periodocity)
+                df = ds.createData(geography=muni, time_resolution=periodocity)
 
                 # Checks Id Columns
                 self.assertTrue(ID_1 in df.columns)

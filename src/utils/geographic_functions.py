@@ -125,7 +125,6 @@ def agglomerate_data_frame(df: pd.DataFrame,
             fun_dic[col] = gr
 
     # Aggregates
-
     df_agg = df.groupby(grouping_columns).agg(fun_dic).reset_index()
 
     # Corrects AVERAGE columns
@@ -143,7 +142,8 @@ def overlay_over_geo(df_values: geopandas.GeoDataFrame,
                      df_geo: geopandas.GeoDataFrame,
                      grouping_columns=[ID, DATE],
                      included_groupings=[SUM, TOTAL, AVERAGE, MAX, MIN],
-                     default_values=np.nan):
+                     default_values=np.nan,
+                     same_geography = False):
     '''
     Method that overlays the given df over the geographic dataframe
 
@@ -153,21 +153,29 @@ def overlay_over_geo(df_values: geopandas.GeoDataFrame,
         Geopandas dataframe with the values to overlay. This method assumes that anything other than
         than the grouping columns and geometry is a value that must be overlayed.
     df_geo : Geopandas.DataFrame
-        Geopandas dataframe with the geometry to be overlayed. Will only use the columns ID and geometry
+        Geopandas dataframe with the geometry to be overlayed. Will only use the columns ID and geometry. 
     grouping_columns : array
         Columns that must be grouped over
     included_groupings : array
         Grouping functions to be applied 
     default_values : value or dict
         Value or dict indicating the default values for geometries where no value could be extracted
+    same_geography : bool
+        Boolean indicating if the underlying geometry of df_values is a subset of the one used in df_geo to speed up the process. If is True, will
+        merge and operate by ids if not, will use geometric overlay.
     '''
 
-    df_geo = df_geo[[ID, GEOMETRY]].copy()
+    # Removes surplus columns
+    df_geo = df_geo[[ID, GEOMETRY]].copy() 
+    
+    df_overlayed = df_values
 
-    df_overlayed = geopandas.overlay(df_geo,
-                                     df_values,
-                                     how='intersection',
-                                     keep_geom_type=True)
+    if not same_geography:        
+        df_values.drop(columns=[ID], inplace=True)
+        df_overlayed = geopandas.overlay(df_geo,
+                                        df_values,
+                                        how='intersection',
+                                        keep_geom_type=True)
 
     # Aggregates
     df_overlayed = agglomerate_data_frame(df_overlayed, grouping_columns,

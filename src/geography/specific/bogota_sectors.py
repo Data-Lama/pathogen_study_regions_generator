@@ -1,11 +1,11 @@
 # Bogota Sectors
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas
 import os
 
 
-class BogotaSectors(AbstractGeography):
+class BogotaSectors(Geography):
     '''
     Geography for the municipalities of Colombia
     

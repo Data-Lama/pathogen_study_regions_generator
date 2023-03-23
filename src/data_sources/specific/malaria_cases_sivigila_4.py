@@ -21,9 +21,10 @@ class MalariaSivigila4(DataFromTimeSeriesOfCSV):
                          file_name="sivigila_4.csv",
                          min_year=2006,
                          max_year=2021,
-                         suplementary_geography=ColombianMunicipalities(),
+                         reference_geography=ColombianMunicipalities(),
                          min_time_resolution=WEEK,
                          index_id="muni_id",
                          included_groupings=[SUM],
+                         time_resolution_aggregation_function = SUM,
                          columns_of_interest=["num_cases"],
                          default_values={"num_cases": 0})

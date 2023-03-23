@@ -1,13 +1,13 @@
 # Colombian Grid
 import this
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas as gpd
 import os
 import constants as con
 
 
-class ColombianGrid(AbstractGeography):
+class ColombianGrid(Geography):
     '''
     Geography for the grid of Colombia
     

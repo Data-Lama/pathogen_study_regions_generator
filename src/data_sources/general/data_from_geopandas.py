@@ -10,10 +10,12 @@ from data_sources.abstract.vector_data_source import VectorDataSource
 from utils.date_functions import compare_time_resolutions, increase_time_resolution, lower_time_resolution
 from utils.geographic_functions import agglomerate_data_frame, get_enclosing_geoemtry, overlay_over_geo
 
+from geography.abstract.abstact_geography import Geography
+
 
 class DataFromGeoPandas(VectorDataSource, ABC):
     '''
-    Main class for extraction from any file representation that endsup being a geopandas
+    Main class for extraction from any file representation that ends up being a geopandas
     implemented, to later overlay it over the received geography and take it to the time resolution.
     '''
 
@@ -21,11 +23,12 @@ class DataFromGeoPandas(VectorDataSource, ABC):
                  id,
                  name,
                  data_time_resolution,
-                 included_groupings=[TOTAL, AVERAGE, MAX, MIN],
-                 time_resolution_aggregation_function=MEAN,
+                 time_resolution_aggregation_function,
+                 included_groupings=[TOTAL, AVERAGE, MAX, MIN],                 
                  time_resolution_extrapolation_function= LINEAR,
                  default_values=None,
-                 fill_missing_space=False):
+                 fill_missing_space=False,
+                 reference_geography=None):
         '''
         Parameters
         ----------
@@ -35,10 +38,10 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             Name of the data source
         data_time_resolution : string
             Resolution in which the data source is in.
-        included_groupings : array
-            Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
         time_resolution_aggregation_function : str
             How to lower the time resolution of the data source. See utils.date_functions.lower_time_resolution for more info.
+        included_groupings : array
+            Grouping functions to be applied. See: utils.geographic_functions.overlay_over_geo for more info
         time_resolution_extrapolation_function : str
             How to increase the time resolution of the data source. See utils.date_functions.increase_time_resolution for more info.
         default_values : value or dict
@@ -48,6 +51,9 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             polygons with the default value.
         fill_missing_space : boolean
             If the missing geographical space should be filled with default values or not
+        reference_geography : Geography
+            An element of abstract geometry in case the dataset is linked to specific geography. The program will use this value
+            to skip overlay in case both geometries are the same. Deafult is None
         '''
         super().__init__()
         self.__id = id
@@ -58,6 +64,7 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         self.time_resolution_aggregation_function = time_resolution_aggregation_function
         self.time_resolution_extrapolation_function = time_resolution_extrapolation_function
         self.fill_missing_space = fill_missing_space
+        self.reference_geography = reference_geography
 
 
     @property
@@ -79,19 +86,28 @@ class DataFromGeoPandas(VectorDataSource, ABC):
             Geopandas Dataframe with the columns:
                 - date : date for the given values. Should be in the format of the periods
                 - geometry : geomtry
+                - id : str. Optional, in case each row has unique ID. This is used in case there is a created geometry that will
+                            be used to load the data
                 ... columns with the values of the data
         '''
         pass
 
     # Override Methods
     # -----------------
-    def createData(self, df_geo, time_resolution, **kwargs):
+    def createData(self, geography: Geography, time_resolution: str) -> pd.DataFrame:
+
+        # Extracts geopandas
+        df_geo = geography.get_geometry()
+
+        # Checks if given geography is equal to reference
+        same_geography = geography.ID == self.reference_geography.ID
+        
 
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 
         # Loads inclosing geometry
-        if self.fill_missing_space:
+        if not same_geography and self.fill_missing_space:
             enclosing_geo = get_enclosing_geoemtry(df_geo)
 
         # Reads the time series shapefile
@@ -111,10 +127,10 @@ class DataFromGeoPandas(VectorDataSource, ABC):
         Logger.enter_level()
         for date in dates:
             Logger.print_progress(f"{date}")
-            df_temp = df_values[df_values[DATE] == date]
-
+            df_temp = df_values[df_values[DATE] == date].copy()
+            
             # If incomplete. Adds difference polygon
-            if self.fill_missing_space:
+            if not same_geography and self.fill_missing_space:
                 geo_diff = enclosing_geo[GEOMETRY].difference(
                     df_temp[[GEOMETRY]].dissolve())
 
@@ -125,21 +141,24 @@ class DataFromGeoPandas(VectorDataSource, ABC):
                     ignore_index=True)
 
                 df_temp = df_temp.fillna(self.default_values)
-
-            # Overlays over the given geography
+            
+             
+            # Overlays over the given geography                        
             df_ovelayed = overlay_over_geo(
                 df_temp,
                 df_geo,
                 grouping_columns=[ID, DATE],
                 included_groupings=self.included_groupings,
-                default_values=self.default_values)
-
+                default_values=self.default_values,
+                same_geography = same_geography)
+                    
             all_dfs.append(df_ovelayed)
 
         df = pd.concat(all_dfs, ignore_index=True)
         Logger.exit_level()
 
         Logger.print_progress(f"Changes Time Resolution")
+       
         # Takes the time series to the desired time resolution
         # --------------
         # Compares time resolutions
@@ -148,13 +167,13 @@ class DataFromGeoPandas(VectorDataSource, ABC):
 
         if comp > 0:
             # Target resolution is lower
-
             df = lower_time_resolution(df=df, 
                                        initial_time_resolution=self.data_time_resolution,
                                        target_time_resolution=time_resolution,
                                        aggregation_function=self.time_resolution_aggregation_function)
 
         elif comp < 0:
+            
             # Target resolution is higher
             df = increase_time_resolution(df = df,
                                         initial_time_resolution = self.data_time_resolution,
@@ -190,3 +209,7 @@ class DataFromGeoPandas(VectorDataSource, ABC):
                                           included_groupings=[])
 
         return (df_final)
+
+
+    # Private Methods
+    # -----------------

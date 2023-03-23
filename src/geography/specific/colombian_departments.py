@@ -1,12 +1,12 @@
 # Colombian Departments
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas
 import os
 import constants as con
 
 
-class ColombianDepartments(AbstractGeography):
+class ColombianDepartments(Geography):
     '''
     Geography for the departments of Colombia
     

@@ -1,5 +1,5 @@
 # Total precipitation data source
-from constants import TOTAL, WEEK
+from constants import TOTAL, WEEK, SUM
 from data_sources.general.data_from_gee_export import DataFromGeeExport
 
 # Constants
@@ -23,5 +23,6 @@ class PrecipitationTotal(DataFromGeeExport):
                          min_year=2000,
                          max_year=2020,
                          included_groupings=[TOTAL],
+                         time_resolution_aggregation_function=SUM,
                          default_values=0,
                          data_time_resolution=WEEK)

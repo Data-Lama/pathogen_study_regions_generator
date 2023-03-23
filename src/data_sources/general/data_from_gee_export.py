@@ -24,10 +24,10 @@ class DataFromGeeExport(DataFromGeoPandas):
                  max_year,
                  included_groupings,
                  default_values,
+                 time_resolution_aggregation_function,
                  data_time_resolution=WEEK,
-                 drop_zeros=False,
-                 time_resolution_aggregation_function=MEAN,
-                 time_resolution_extrapolation_function= LINEAR,
+                 drop_zeros=False,                 
+                 time_resolution_extrapolation_function=LINEAR,
                  fill_missing_space=False):
         '''
         '''
@@ -53,7 +53,7 @@ class DataFromGeeExport(DataFromGeoPandas):
     def rename_colum(self, col):
         '''Renames column.
         
-        Default implementations returns the correponding value from dict
+        Default implementations returns the corresponding value from dict
         '''
         return (self.data_columns_dictionary[col])
 

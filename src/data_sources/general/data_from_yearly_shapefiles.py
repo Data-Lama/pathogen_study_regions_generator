@@ -15,9 +15,18 @@ class DataFromYearlyShapefiles(DataFromGeoPandas):
     Main class for extraction for yearly shapefiles
     '''
 
-    def __init__(self, id, name, folder_name, file_format, data_columns,
-                 min_year, max_year, included_groupings, default_values,
-                 time_resolution_aggregation_function=MEAN, time_resolution_extrapolation_function= LINEAR):
+    def __init__(self, 
+                 id, 
+                 name, 
+                 folder_name, 
+                 file_format, 
+                 data_columns,
+                 min_year, 
+                 max_year, 
+                 included_groupings, 
+                 default_values,
+                 time_resolution_aggregation_function, 
+                 time_resolution_extrapolation_function= LINEAR):
         '''
         Parameters
         ----------

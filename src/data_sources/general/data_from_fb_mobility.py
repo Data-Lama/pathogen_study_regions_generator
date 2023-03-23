@@ -10,6 +10,8 @@ from utils.facebook_functions import build_movement
 import geopandas
 import pandas as pd
 
+from geography.abstract.abstact_geography import Geography
+
 # Constants
 MOVEMENT = "movement"
 
@@ -34,11 +36,13 @@ class FBMobilityFromFolder(MatrixDataSource):
         return self.__name
 
     # Override
-    def createData(self, df_geo, time_resolution):
-
+    def createData(self, geography: Geography, time_resolution: str) -> pd.DataFrame:
+    
         # Checks time resolution
         isTimeResolutionValid(time_resolution)
 
+        # Extracts geopandas
+        df_geo = geography.get_geometry()
         # Directory
         directory = self.folder
 

@@ -1,11 +1,11 @@
 # Colombian Departments
 from constants import GEO_DATA_FOLDER, ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 import geopandas
 import os
 
 
-class ColombianFrontiers(AbstractGeography):
+class ColombianFrontiers(Geography):
     '''
     Geography for the froniers of Colombia
     

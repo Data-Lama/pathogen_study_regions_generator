@@ -2,13 +2,14 @@
 # Constants
 
 from re import A
-from constants import BUFFER_PROJECTION, DATE, ID_2, GEOMETRY, ID, MANIPULATION_PROJECTION, PIPELINE_DATA_FOLDER, RAW, ID_1, USUAL_PROJECTION
+from constants import BUFFER_PROJECTION, DATE, ID_2, GEOMETRY, ID, ID_1
 from data_sources.abstract.matrix_data_source import MatrixDataSource
-from utils.date_functions import get_resolution_representative_function, get_today, take_to_resolution_representative
-from utils.facebook_functions import FB_MOVEMENT, MOVEMENT_BETWEEN_TILES, build_movement
+from utils.date_functions import  get_today, take_to_resolution_representative
 import os
 import geopandas
 import pandas as pd
+
+from geography.abstract.abstact_geography import Geography
 
 # Constants
 SOURCE_ID = "geographic_adjacency"
@@ -33,7 +34,10 @@ class FBMobility(MatrixDataSource):
         return NAME
 
     # Override
-    def createData(self, df_geo, time_resolution):
+    def createData(self, geography: Geography, time_resolution: str) -> pd.DataFrame:
+
+        # Extracts geopandas
+        df_geo = geography.get_geometry()
 
         # Global matrix
         df_matrix = df_geo[[ID]].drop_duplicates().merge(

@@ -1,9 +1,9 @@
 # Geography from a flow output
 from constants import CLUSTER_ID, ID, SUB_ID
-from geography.abstract.abstact_geography import AbstractGeography
+from geography.abstract.abstact_geography import Geography
 
 
-class GeographyFromFlowOutput(AbstractGeography):
+class GeographyFromFlowOutput(Geography):
 
     def __init__(self, id, name, flow):
         '''

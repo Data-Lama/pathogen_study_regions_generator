@@ -1,6 +1,6 @@
 # Coca data source
 
-from constants import TOTAL
+from constants import TOTAL, SUM
 from data_sources.general.data_from_yearly_shapefiles import DataFromYearlyShapefiles
 
 # Constants
@@ -22,4 +22,5 @@ class Coca(DataFromYearlyShapefiles):
                          min_year=2000,
                          max_year=2019,
                          included_groupings=[TOTAL],
+                         time_resolution_aggregation_function = SUM,
                          default_values=0)

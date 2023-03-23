@@ -5,6 +5,8 @@ import pandas as pd
 
 from data_sources.abstract.data_source import DataSource
 
+from geography.abstract.abstact_geography import Geography
+
 
 class MatrixDataSource(DataSource, ABC):
 
@@ -23,17 +25,15 @@ class MatrixDataSource(DataSource, ABC):
         pass
 
     @abstractmethod
-    def createData(self, df_geo, time_resolution):
+    def createData(self, geography : Geography, time_resolution : str) -> pd.DataFrame:
         '''
         Method that creates the corresponding matrix data. Final data should have the geographical resolution in
-        the df_geo paramter and the periodicity of expressed in time_resolution.
+        the geography parameter and the periodicity of expressed in time_resolution.
 
         Parameters
         ----------
-        df_geo : Geopandas.DataFrame
-            DataFrame with the desired geographical resolution. The df must include columns:
-                - geometry
-                - ID : column with the unique ID
+        geography : Geography
+            The geography that will be used to create the data
         time_resolution : string
             Available time resolutions. Check the constants module for available options.
 
@@ -50,12 +50,12 @@ class MatrixDataSource(DataSource, ABC):
         pass
 
     @abstractmethod
-    def createDataFromCachedSubGeography(self, time_resolution, sub_geography,
-                                         df_map):
+    def createDataFromCachedSubGeography(self, time_resolution : str, sub_geography : Geography,
+                                         df_map : pd.DataFrame) -> pd.DataFrame:
         '''
         Method that creates the corresponding matrix data, based on a sub_geography. 
-        This method is intended to save excecution time by using cached files.
-        Final data should have the geographical resolution in the df_geo paramter and the periodicity of expressed in time_resolution.
+        This method is intended to save execution time by using cached files.
+        Final data should have the geographical resolution in the geography paramter and the periodicity of expressed in time_resolution.
 
         Parameters
         ----------
