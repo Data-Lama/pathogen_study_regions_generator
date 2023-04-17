@@ -18,7 +18,7 @@ class Dengue(DataFromTimeSeriesOfCSV):
         super().__init__(id=id,
                          name=name,
                          folder_name="dengue_cases",
-                         file_name="dengue_sivigila_4.csv",
+                         file_name="DENGUE_filtered.csv",
                          min_year=2006,
                          max_year=2021,
                          reference_geography=ColombianMunicipalities(),

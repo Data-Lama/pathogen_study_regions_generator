@@ -18,7 +18,7 @@ class MalariaVivaxSivigila4(DataFromTimeSeriesOfCSV):
         super().__init__(id=id,
                          name=name,
                          folder_name="malaria_cases",
-                         file_name="sivigila_4.csv",
+                         file_name="MALARIA_filtered.csv",
                          min_year=2006,
                          max_year=2021,
                          reference_geography=ColombianMunicipalities(),
